@@ -19,7 +19,7 @@
       <el-table-column align="center" label="编辑" width="220" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
-          <el-button type="danger" icon="delete" v-if="scope.row.userId!=userId "
+          <el-button type="danger" icon="delete" 
                      @click="removeUser(scope.$index)">删除
           </el-button>
         </template>
@@ -37,28 +37,34 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 300px; margin-left:50px;'>
-        <el-form-item label="命令" required v-if="dialogStatus=='create'">
+        <el-form-item label="命令" required >
           <el-input type="text" v-model="tempScriptConfig.shellName">
           </el-input>
         </el-form-item>
-        <el-form-item label="命令描述" v-if="dialogStatus=='create'" required>
+        <el-form-item label="命令描述"  required>
           <el-input type="text" v-model="tempScriptConfig.shellDesc">
           </el-input>
         </el-form-item>
-        <el-form-item label="适用系统" v-else>
-          <el-input type="text" v-model="tempScriptConfig.systemType" placeholder="不填则表示不修改">
-          </el-input>
+        <el-form-item label="适用系统"  required>
+          <el-select v-model="tempScriptConfig.systemType" placeholder="请选择">
+            <el-option
+              v-for="item in sysVersion"
+              :key="item.value"
+              :label="item.lable"
+              :value="item.lable">
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="系统版本" required v-if="dialogStatus=='create'">
-          <el-input type="text" v-model="tempScriptConfig.systemVersion">
+        <el-form-item label="系统版本" >
+        <el-input type="text" v-model="tempScriptConfig.systemVersion" >
           </el-input>
         </el-form-item>
         
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button v-if="dialogStatus=='create'" type="success" @click="createUser">创 建</el-button>
-        <el-button type="primary" v-else @click="updateUser">修 改</el-button>
+        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
+        <el-button type="primary" v-else @click="updateScript">修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -76,7 +82,22 @@
           pageNum: 1,//页码
           pageRow: 50,//每页条数
         },
-        roles: [],//角色列表
+        sysVersion: [{
+          value:'0',
+          lable:'MySQL'
+        },{
+          value:'1',
+          lable:'Oracle'
+        },{
+          value:'2',
+          lable:'SQLServer'
+        },{
+          value:'3',
+          lable:'Redis'
+        },{
+          value:'4',
+          lable:'Red Hat'
+        }],//角色列表
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
@@ -93,9 +114,9 @@
     },
     created() {
       this.getList();
-      if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
-        this.getAllRoles();
-      }
+      // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
+      //   this.getAllRoles();
+      // }
     },
     computed: {
       ...mapGetters([
@@ -103,14 +124,14 @@
       ])
     },
     methods: {
-      getAllRoles() {
-        this.api({
-          url: "/user/getAllRoles",
-          method: "get"
-        }).then(data => {
-          this.roles = data.list;
-        })
-      },
+      // getAllRoles() {
+      //   this.api({
+      //     url: "/user/getAllRoles",
+      //     method: "get"
+      //   }).then(data => {
+      //     this.roles = data.list;
+      //   })
+      // },
       getList() {
         //查询列表
         this.listLoading = true;
@@ -155,32 +176,34 @@
         this.dialogFormVisible = true
       },
       showUpdate($index) {
-        let user = this.list[$index];
-        this.tempScriptConfig.shellName = user.username;
-        this.tempScriptConfig.nickname = user.nickname;
-        this.tempScriptConfig.roleId = user.roleId;
-        this.tempScriptConfig.userId = user.userId;
+        let shell = this.list[$index];
+        this.tempScriptConfig.shellName = shell.shellName;
+        this.tempScriptConfig.shellDesc = shell.shellDesc;
+        this.tempScriptConfig.systemType = shell.systemType;
+        this.tempScriptConfig.systemVersion = shell.systemVersion;
         this.tempScriptConfig.deleteStatus = '1';
-        this.tempScriptConfig.password = '';
+        this.tempScriptConfig.id = shell.id;
         this.dialogStatus = "update"
         this.dialogFormVisible = true
       },
-      createUser() {
+      createScript() {
+        let _vue = this;
         //添加新用户
         this.api({
-          url: "/user/addUser",
+          url: "/scriptConfig/addScript",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          _vue.$message.success("新增成功")
           this.getList();
           this.dialogFormVisible = false
         })
       },
-      updateUser() {
+      updateScript() {
         //修改用户信息
         let _vue = this;
         this.api({
-          url: "/user/updateUser",
+          url: "/scriptConfig/updateScript",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
@@ -201,18 +224,20 @@
       },
       removeUser($index) {
         let _vue = this;
-        this.$confirm('确定删除此用户?', '提示', {
+        this.$confirm('确定删除此命令?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
           type: 'warning'
         }).then(() => {
-          let user = _vue.list[$index];
-          user.deleteStatus = '2';
+          let script = _vue.list[$index];
+          //user.deleteStatus = '2';
+          this.tempScriptConfig.id = script.id;
           _vue.api({
-            url: "/user/updateUser",
+            url: "/scriptConfig/deleteScript",
             method: "post",
-            data: user
+            data: this.tempScriptConfig
           }).then(() => {
+            _vue.$message.success("删除成功")
             _vue.getList()
           }).catch(() => {
             _vue.$message.error("删除失败")
