@@ -2,16 +2,19 @@
   <div class="app-container">
     <div class="filter-container">
       <el-form>
-        <el-form-item>
-          <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加
-          </el-button>
+ 
+      <el-form-item>
+          <el-input v-model="listQuery.shellDesc" placeholder="请输入命令描述" style='width: 300px;' type="text" clearable></el-input>
+          <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
+           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
       </el-form>
     </div>
+    
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
               highlight-current-row>
       <el-table-column align="center" label="序号" prop="id" width="80"></el-table-column>
-      <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true"></el-table-column>
+      <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
       <el-table-column align="center" label="命令描述" prop="shellDesc" width="130"></el-table-column>
       <el-table-column align="center" label="适用系统" prop="systemType" width="100"></el-table-column>
       <el-table-column align="center" label="系统版本" prop="systemVersion" width="100"></el-table-column>
@@ -25,6 +28,7 @@
         </template>
       </el-table-column>
     </el-table>
+   
     <el-pagination
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
@@ -68,9 +72,12 @@
       </div>
     </el-dialog>
   </div>
+ 
+
 </template>
 <script>
   import {mapGetters} from 'vuex'
+  
 
   export default {
     data() {
@@ -81,6 +88,7 @@
         listQuery: {
           pageNum: 1,//页码
           pageRow: 50,//每页条数
+          shellDesc : '',//查询条件
         },
         sysVersion: [{
           value:'0',
@@ -109,8 +117,10 @@
           shellDesc: '',
           systemType: '',
           systemVersion: ''
-        }
+        },
+        
       }
+    
     },
     created() {
       this.getList();
@@ -244,6 +254,8 @@
           })
         })
       },
+
     }
   }
 </script>
+
