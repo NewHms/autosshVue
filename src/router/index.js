@@ -67,20 +67,27 @@ export const asyncRouterMap = [
     redirect: '/server/',
     name: '',
     meta: {title: '数据库日检', icon: 'table'},
-    children: [
-      /*{
-        path: '', name: '日检配置', component: _import('server/inspectionConfig'), meta: {title: '日检配置', icon: 'form'}, menu: 'server'
-      },*/
-      
+    children: [  
       {
-        path: '', name: '日检服务器配置', component: _import('server/scriptConfig'), meta: {title: '日检服务器配置', icon: 'tree'}, menu: 'server'
+        path: '', 
+        name: ' 日检配置', 
+        component: _import('server/scriptConfig'), 
+        meta: {title: '日检配置', icon: 'tree'}, 
+        menu: 'server'
       },
       {
-        path: 'role',
-        name: '权限管理',
-        component: _import('user/role'),
-        meta: {title: '权限管理', icon: 'password'},
-        menu: 'role'
+        path: 'sh_setting', 
+        name: ' 日检脚本配置', 
+        component: _import('server/scriptConfig'), 
+        meta: {title: '日检脚本配置', icon: 'tree'}, 
+        menu: 'sh_setting'
+      },
+      {
+        path: 'sh_portion', 
+        name: ' 日检服务器配置', 
+        component: _import('server/portionConfig'), 
+        meta: {title: '日检服务器配置', icon: 'tree'}, 
+        menu: 'dis_setting'
       },
     ]
   },
