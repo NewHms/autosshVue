@@ -49,13 +49,13 @@
           <el-input type="text" v-model="tempScriptConfig.shellDesc">
           </el-input>
         </el-form-item>
-        <el-form-item label="适用系统"  required>
-          <el-select v-model="tempScriptConfig.systemType" placeholder="请选择">
+        <el-form-item label="适用系统" required>
+          <el-select v-model="tempScriptConfig.systemType" clearable placeholder="请选择"> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
-              v-for="item in sysVersion"
-              :key="item.value"
-              :label="item.lable"
-              :value="item.lable">
+              v-for="item in alltype"
+              :key="item.serverId"
+              :label="item.serverType"
+              :value="item.serverType">
             </el-option>
           </el-select>
         </el-form-item>
@@ -90,22 +90,23 @@
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
-        sysVersion: [{
-          value:'0',
-          lable:'MySQL'
-        },{
-          value:'1',
-          lable:'Oracle'
-        },{
-          value:'2',
-          lable:'SQLServer'
-        },{
-          value:'3',
-          lable:'Redis'
-        },{
-          value:'4',
-          lable:'Red Hat'
-        }],//角色列表
+        alltype: [],
+        // sysVersion: [{
+        //   value:'0',
+        //   lable:'MySQL'
+        // },{
+        //   value:'1',
+        //   lable:'Oracle'
+        // },{
+        //   value:'2',
+        //   lable:'SQLServer'
+        // },{
+        //   value:'3',
+        //   lable:'Redis'
+        // },{
+        //   value:'4',
+        //   lable:'Red Hat'
+        // }],//角色列表
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
@@ -124,9 +125,9 @@
     },
     created() {
       this.getList();
-      // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
-      //   this.getAllRoles();
-      // }
+      if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
+        this.getAllServerType();
+      }
     },
     computed: {
       ...mapGetters([
@@ -134,14 +135,14 @@
       ])
     },
     methods: {
-      // getAllRoles() {
-      //   this.api({
-      //     url: "/user/getAllRoles",
-      //     method: "get"
-      //   }).then(data => {
-      //     this.roles = data.list;
-      //   })
-      // },
+      getAllServerType() {
+        this.api({
+          url: "/scriptConfig/getAllServerType",
+          method: "get"
+        }).then(data => {
+          this.alltype = data.list;
+        })
+      },
       getList() {
         //查询列表
         this.listLoading = true;
@@ -181,7 +182,6 @@
         this.tempScriptConfig.shellDesc = "";
         this.tempScriptConfig.systemType = "";
         this.tempScriptConfig.systemVersion = "";
-      
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       },
