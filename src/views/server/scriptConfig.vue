@@ -19,10 +19,10 @@
         </template>
       </el-table-column>        
       <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-      <el-table-column align="center" label="命令描述" prop="shellDesc" width="130"></el-table-column>
-      <el-table-column align="center" label="适用系统" prop="systemType" width="100"></el-table-column>
-      <el-table-column align="center" label="系统版本" prop="systemVersion" width="100"></el-table-column>
-      <el-table-column align="center" label="创建时间" prop="createTime" width="160"></el-table-column>
+      <el-table-column align="center" label="命令描述" prop="shellDesc"></el-table-column>
+      <el-table-column align="center" label="适用系统" prop="systemType"></el-table-column>
+      <el-table-column align="center" label="系统版本" prop="systemVersion"></el-table-column>
+      <el-table-column align="center" label="创建时间" prop="createTime"></el-table-column>
       <el-table-column align="center" label="编辑" width="220" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>

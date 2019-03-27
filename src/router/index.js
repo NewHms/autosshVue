@@ -71,7 +71,7 @@ export const asyncRouterMap = [
       {
         path: '', 
         name: ' 日检配置', 
-        component: _import('server/scriptConfig'), 
+        component: _import('server/index'), 
         meta: {title: '日检配置', icon: 'tree'}, 
         menu: 'server'
       },

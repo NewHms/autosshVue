@@ -4,7 +4,7 @@
       <el-form>
  
       <el-form-item>
-          <el-input v-model="listQuery.IP" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
+          <el-input v-model="listQuery.HOST" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
@@ -13,17 +13,22 @@
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
               highlight-current-row>
-      <el-table-column align="center" label="序号"     prop="id" width="80">
+      <el-table-column align="center" label="序号" prop="id" width="80">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="IP"      prop="IP"></el-table-column>
-      <el-table-column align="center" label="主机名"   prop="hostName"></el-table-column>
-      <el-table-column align="center" label="适用版本" prop="sysVersion"></el-table-column>
-      <el-table-column align="center" label="执行时间" prop="execTime"></el-table-column>
-      <el-table-column align="center" label="创建时间" prop="createTime"></el-table-column>
-      <el-table-column align="center" label="编辑"     width="220" v-if="hasPerm('scriptConfig:update')">
+      <el-table-column align="center" label="服务器器"     prop="IP"></el-table-column>
+      <el-table-column align="center" label="应用服务器"   prop="hostName"></el-table-column>
+      <el-table-column align="center" label="用户名"       prop="sysVersion"></el-table-column>
+      <el-table-column align="center" label="DB 用户名"    prop="execTime"></el-table-column>
+      <el-table-column align="center" label="适用版本"     prop="execTime"></el-table-column>
+      <el-table-column align="center" label="任务名称"     prop="execTime"></el-table-column>
+      <el-table-column align="center" label="数据库类型"   prop="execTime"></el-table-column>
+      <el-table-column align="center" label="是否自动启动" prop="execTime"></el-table-column>
+      <el-table-column align="center" label="创建时间"     prop="execTime"></el-table-column>
+      <el-table-column align="center" label="执行时间"     prop="createTime"></el-table-column>
+      <el-table-column align="center" label="编辑"         width="200" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
           <el-button type="danger" icon="delete" 
