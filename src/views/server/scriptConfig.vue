@@ -6,14 +6,18 @@
       <el-form-item>
           <el-input v-model="listQuery.shellDesc" placeholder="请输入命令描述" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
+          <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
       </el-form>
     </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
               highlight-current-row>
-      <el-table-column align="center" label="序号" prop="id" width="80"></el-table-column>
+      <el-table-column align="center" label="序号" width="80">
+        <template slot-scope="scope">
+          <span v-text="getIndex(scope.$index)"> </span>
+        </template>
+      </el-table-column>        
       <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
       <el-table-column align="center" label="命令描述" prop="shellDesc" width="130"></el-table-column>
       <el-table-column align="center" label="适用系统" prop="systemType" width="100"></el-table-column>
@@ -50,7 +54,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="适用系统" required>
-          <el-select v-model="tempScriptConfig.systemType" clearable placeholder="请选择"> <!-- 对应列名 clearable 清空当前checkbox-->
+          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择"> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in alltype"
               :key="item.serverId"

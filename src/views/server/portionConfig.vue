@@ -6,7 +6,7 @@
       <el-form-item>
           <el-input v-model="listQuery.IP" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-          <el-button type="primary" icon="plus" v-if="hasPerm('portionConfig:add')" @click="showCreate">添加 </el-button>
+          <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -49,24 +49,23 @@
           <el-input type="text" v-model="tempScriptConfig.hostName">
           </el-input>
         </el-form-item>
-        <el-form-item label="适用版本"  required>
-          <el-select v-model="tempScriptConfig.sysVersion" placeholder="请选择">
+        <el-form-item label="适用版本" required>
+          <el-select v-model="tempScriptConfig.sysVersion"  multiple placeholder="" label-width="80px" style='width: 220px;'> 
             <el-option
-              v-for="item in sysVersion"
-              :key="item.value"
-              :label="item.lable"
-              :value="item.lable">
+              v-for="item in alltype"
+              :key="item.serverId"
+              :label="item.serverType"
+              :value="item.serverType">
             </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="执行时间" >
         <el-input type="text" v-model="tempScriptConfig.execTime" >
           </el-input>
-        </el-form-item>
-        
+        </el-form-item>  
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button @click="dialogFormVisible = false;alltypes=[]">取 消</el-button>
         <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
         <el-button type="primary" v-else @click="updateScript">修 改</el-button>
       </div>
@@ -78,34 +77,34 @@
 <script>
   import {mapGetters} from 'vuex'
   
-
   export default {
     data() {
       return {
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
+        alltype : [],
         listLoading: false,//数据加载等待动画
         listQuery: {
           pageNum: 1,//页码
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
-        sysVersion: [{
-          value:'0',
-          lable:'MySQL'
-        },{
-          value:'1',
-          lable:'Oracle'
-        },{
-          value:'2',
-          lable:'SQLServer'
-        },{
-          value:'3',
-          lable:'Redis'
-        },{
-          value:'4',
-          lable:'Red Hat'
-        }],//角色列表
+        // sysVersion1: [{
+        //   value:'0',
+        //   lable:'MySQL'
+        // },{
+        //   value:'1',
+        //   lable:'Oracle'
+        // },{
+        //   value:'2',
+        //   lable:'SQLServer'
+        // },{
+        //   value:'3',
+        //   lable:'Redis'
+        // },{
+        //   value:'4',
+        //   lable:'Red Hat'
+        // }],//角色列表
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
@@ -115,7 +114,7 @@
         tempScriptConfig: {
           IP        : '',
           hostName  : '',
-          sysVersion: '',
+          sysVersion: [],
           execTime  : ''
         },
         
@@ -127,6 +126,9 @@
       // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
       //   this.getAllRoles();
       // }
+      if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
+        this.getAllServerType();
+      }
     },
     computed: {
       ...mapGetters([
@@ -142,6 +144,14 @@
       //     this.roles = data.list;
       //   })
       // },
+      getAllServerType() {
+        this.api({
+          url: "/scriptConfig/getAllServerType",
+          method: "get"
+        }).then(data => {
+          this.alltype = data.list;
+        })
+      },
       getList() {
         //查询列表
         this.listLoading = true;
@@ -186,16 +196,29 @@
         this.dialogFormVisible = true
       },
       showUpdate($index) {
+        debugger
         let shell = this.list[$index];
+        //获取已选择的sysVersion
+        let sysVersion  = shell.sysVersion;
+        //定义遍历数组
+        var arrStringTypes = new Array();
+        //以and分割 将类型存储数组中
+        for(var oldType in sysVersion.split(" and ")){
+            // vue是数组类型是用push赋值
+						arrStringTypes.push(sysVersion.split(" and ")[oldType]+'');
+					}
+        this.tempScriptConfig.sysVersion = [];
         this.tempScriptConfig.IP           = shell.IP;
         this.tempScriptConfig.hostName     = shell.hostName;
-        this.tempScriptConfig.sysVersion   = shell.sysVersion;
+        // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
+        this.tempScriptConfig.sysVersion   = arrStringTypes;
         this.tempScriptConfig.execTime     = shell.execTime;
         this.tempScriptConfig.deleteStatus = '1';
         this.tempScriptConfig.id           = shell.id;
         this.dialogStatus                  = "update"
         this.dialogFormVisible             = true
       },
+      
       createScript() {
         let _vue = this;
         //添加新配置
@@ -212,6 +235,7 @@
       updateScript() {
         //修改配置信息
         let _vue = this;
+        debugger
         this.api({
           url: "/portionConfig/updatePortion",
           method: "post",
@@ -254,8 +278,6 @@
           })
         })
       },
-
     }
   }
 </script>
-
