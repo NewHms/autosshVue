@@ -16,7 +16,7 @@ export const constantRouterMap = [
     name: '首页',
     hidden: true,
     children: [{
-      path: 'dashboard', component: _import('server/scriptConfig')
+      path: 'dashboard', component: _import('server/indexConfig')
     }]
   }
 ]
@@ -71,7 +71,7 @@ export const asyncRouterMap = [
       {
         path: '', 
         name: ' 日检配置', 
-        component: _import('server/index'), 
+        component: _import('server/indexConfig'), 
         meta: {title: '日检配置', icon: 'tree'}, 
         menu: 'server'
       },

@@ -13,7 +13,7 @@
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
               highlight-current-row>
-      <el-table-column align="center" label="序号" width="80">
+      <el-table-column align="center" label="序号" width="40">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
@@ -54,7 +54,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="适用系统" required>
-          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择"> <!-- 对应列名 clearable 清空当前checkbox-->
+          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" style='width: 220px;'> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in alltype"
               :key="item.serverId"

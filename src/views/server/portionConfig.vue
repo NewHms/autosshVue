@@ -13,7 +13,7 @@
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
               highlight-current-row>
-      <el-table-column align="center" label="序号"     prop="id" width="80">
+      <el-table-column align="center" label="序号"     prop="id" width="40">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
@@ -207,9 +207,9 @@
         //定义遍历数组
         var arrStringTypes = new Array();
         //以and分割 将类型存储数组中
-        for(var oldType in sysVersion.split(" and ")){
+        for(var oldType in sysVersion.split(",")){
             // vue是数组类型是用push赋值
-						arrStringTypes.push(sysVersion.split(" and ")[oldType]+'');
+						arrStringTypes.push(sysVersion.split(",")[oldType]+'');
 					}
         this.tempScriptConfig.sysVersion = [];
         this.tempScriptConfig.IP           = shell.IP;

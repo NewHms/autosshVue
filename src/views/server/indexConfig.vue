@@ -2,33 +2,33 @@
   <div class="app-container">
     <div class="filter-container">
       <el-form>
- 
-      <el-form-item>
-          <el-input v-model="listQuery.HOST" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
+
+        <el-form-item>
+          <el-input v-model="listQuery.host" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-          <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
+          <el-button type="primary" icon="plus" v-if="hasPerm('index:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
       </el-form>
     </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
               highlight-current-row>
-      <el-table-column align="center" label="序号" prop="id" width="80">
+      <el-table-column align="center" label="序号" prop="id" width="40">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="服务器器"     prop="IP"></el-table-column>
-      <el-table-column align="center" label="应用服务器"   prop="hostName"></el-table-column>
-      <el-table-column align="center" label="用户名"       prop="sysVersion"></el-table-column>
-      <el-table-column align="center" label="DB 用户名"    prop="execTime"></el-table-column>
-      <el-table-column align="center" label="适用版本"     prop="execTime"></el-table-column>
-      <el-table-column align="center" label="任务名称"     prop="execTime"></el-table-column>
-      <el-table-column align="center" label="数据库类型"   prop="execTime"></el-table-column>
-      <el-table-column align="center" label="是否自动启动" prop="execTime"></el-table-column>
-      <el-table-column align="center" label="创建时间"     prop="execTime"></el-table-column>
-      <el-table-column align="center" label="执行时间"     prop="createTime"></el-table-column>
-      <el-table-column align="center" label="编辑"         width="200" v-if="hasPerm('scriptConfig:update')">
+        <el-table-column align="center" label="服务器"       prop="host" width="135"></el-table-column>
+        <el-table-column align="center" label="应用服务器"   prop="applicationServer" width="135"></el-table-column>
+        <el-table-column align="center" label="用户名"       prop="userName" width="80"></el-table-column>
+        <el-table-column align="center" label="DB 用户名"    prop="dbUsername" width="100"></el-table-column>
+        <el-table-column align="center" label="适用版本"     prop="sysVersion"></el-table-column>
+        <el-table-column align="center" label="任务名称"     prop="subject"></el-table-column>
+        <el-table-column align="center" label="数据库类型"   prop="systemType"></el-table-column>
+        <el-table-column align="center" label="是否自动启动"  prop="crontab" :formatter = "stateFormat" ></el-table-column>
+        <!-- el-table-column align="center" label="创建时间"     prop="createTime"></el-table-column> -->
+        <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
+        <el-table-column align="center" label="编辑"         width="200" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
           <el-button type="danger" icon="delete" 
@@ -49,17 +49,34 @@
     </el-pagination>
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
-               style='width: 300px; margin-left:50px;'>
-        <el-form-item label="IP" required >
-          <el-input type="text" v-model="tempScriptConfig.IP">
+               style='width: 300px; margin-left:50px;' label="right">
+               <!--label-width="100px" 设置长度 -->
+        <el-form-item label="服务器"  required  label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.host">
           </el-input>
         </el-form-item>
-        <el-form-item label="主机名"  required>
-          <el-input type="text" v-model="tempScriptConfig.hostName">
+        <el-form-item label="应用服务器"  required  label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.applicationServer">
           </el-input>
         </el-form-item>
-        <el-form-item label="适用版本" required>
-          <el-select v-model="tempScriptConfig.sysVersion"  multiple placeholder="" label-width="80px" style='width: 220px;'> 
+        <el-form-item label="用户名"  required label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.userName">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="密码"  required label-width="100px">
+          <el-input type="password" v-model="tempScriptConfig.password">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="DB 用户名"  required label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.dbUsername">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="DB 密码"  required label-width="100px">
+          <el-input type="password" v-model="tempScriptConfig.dbPassword">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="适用版本" required label-width="100px">
+          <el-select v-model="tempScriptConfig.sysVersion" disabled multiple placeholder="" label-width="80px" style='width: 200px;'> 
             <el-option
               v-for="item in alltype"
               :key="item.serverId"
@@ -68,7 +85,24 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="执行时间" >
+        <el-form-item label="任务名称"  required label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.subject">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="数据库类型"  required label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.systemType">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="自动启动" required label-width="100px">
+          <el-switch
+            v-model="tempScriptConfig.crontab"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-value="1"
+            inactive-value="0">
+          </el-switch>
+        </el-form-item>
+        <el-form-item label="执行时间" required label-width="100px" >
         <el-input type="text" v-model="tempScriptConfig.execTime" >
           </el-input>
         </el-form-item>  
@@ -98,6 +132,13 @@
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
+        crontab: [{
+          value:'0',
+          lable:'OFF'
+        },{
+          value:'1',
+          lable:'ON'
+        }],//角色列表
         // sysVersion1: [{
         //   value:'0',
         //   lable:'MySQL'
@@ -121,10 +162,18 @@
           create: '新增配置'
         },
         tempScriptConfig: {
-          IP        : '',
-          hostName  : '',
-          sysVersion: [],
-          execTime  : ''
+          host               : '',
+          applicationServer  : '',
+          userName           : '',
+          dbUsername         : '',
+          subject            : '',
+          systemType         : '',
+          crontab            : '',
+          sysVersion         : [],
+          execTime           : '',
+          password           : '',
+          dbPassword         : '',
+          labelPosition      : 'right'
         },
         
       }
@@ -153,6 +202,15 @@
       //     this.roles = data.list;
       //   })
       // },
+      // 列字段翻译 ZS
+      stateFormat(row, column) {
+        console.log(row.crontab)
+        if (row.crontab === '1') {
+          return '是'
+        } else if (row.crontab === '0') {
+          return '否'
+        } 
+      },
       getAllServerType() {
         this.api({
           url: "/scriptConfig/getAllServerType",
@@ -166,7 +224,7 @@
         this.listLoading = true;
         this.api({
           
-          url: "/portionConfig/listPortionConfig",
+          url: "/serverConfig/listServerConfig",
           method: "get",
           params: this.listQuery
         }).then(data => {
@@ -196,10 +254,18 @@
       },
       showCreate() {
         //显示新增对话框
-        this.tempScriptConfig.IP         = "";
-        this.tempScriptConfig.hostName   = "";
-        this.tempScriptConfig.sysVersion = "";
-        this.tempScriptConfig.execTime   = "";
+        this.tempScriptConfig.host                  = "";
+        this.tempScriptConfig.applicationServer     = "";
+        // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
+        this.tempScriptConfig.sysVersion            = "";
+        this.tempScriptConfig.userName              = "";
+        this.tempScriptConfig.password              = "";
+        this.tempScriptConfig.dbUsername            = "";
+        this.tempScriptConfig.dbPassword            = "";
+        this.tempScriptConfig.subject               = "";
+        this.tempScriptConfig.systemType            = "";
+        this.tempScriptConfig.crontab               = "";
+        this.tempScriptConfig.execTime              = "";
       
         this.dialogStatus = "create"
         this.dialogFormVisible = true
@@ -212,16 +278,23 @@
         //定义遍历数组
         var arrStringTypes = new Array();
         //以and分割 将类型存储数组中
-        for(var oldType in sysVersion.split(" and ")){
+        for(var oldType in sysVersion.split(",")){
             // vue是数组类型是用push赋值
-						arrStringTypes.push(sysVersion.split(" and ")[oldType]+'');
+						arrStringTypes.push(sysVersion.split(",")[oldType]+'');
 					}
         this.tempScriptConfig.sysVersion = [];
-        this.tempScriptConfig.IP           = shell.IP;
-        this.tempScriptConfig.hostName     = shell.hostName;
+        this.tempScriptConfig.host                  = shell.host;
+        this.tempScriptConfig.applicationServer     = shell.applicationServer;
         // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
-        this.tempScriptConfig.sysVersion   = arrStringTypes;
-        this.tempScriptConfig.execTime     = shell.execTime;
+        this.tempScriptConfig.sysVersion            = arrStringTypes;
+        this.tempScriptConfig.userName              = shell.userName;
+        this.tempScriptConfig.password              = shell.password;
+        this.tempScriptConfig.dbUsername            = shell.dbUsername;
+        this.tempScriptConfig.dbPassword            = shell.dbPassword;
+        this.tempScriptConfig.subject               = shell.subject;
+        this.tempScriptConfig.systemType            = shell.systemType;
+        this.tempScriptConfig.crontab               = shell.crontab;
+        this.tempScriptConfig.execTime              = shell.execTime;
         this.tempScriptConfig.deleteStatus = '1';
         this.tempScriptConfig.id           = shell.id;
         this.dialogStatus                  = "update"
@@ -232,7 +305,7 @@
         let _vue = this;
         //添加新配置
         this.api({
-          url: "/portionConfig/addPortion",
+          url: "/serverConfig/addServer",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
@@ -246,7 +319,7 @@
         let _vue = this;
         debugger
         this.api({
-          url: "/portionConfig/updatePortion",
+          url: "/serverConfig/updateServer",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
@@ -276,7 +349,7 @@
           //user.deleteStatus = '2';
           this.tempScriptConfig.id = script.id;
           _vue.api({
-            url: "/portionConfig/deletePortion",
+            url: "/serverConfig/deleteServer",
             method: "post",
             data: this.tempScriptConfig
           }).then(() => {
