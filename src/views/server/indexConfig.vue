@@ -6,7 +6,7 @@
         <el-form-item>
           <el-input v-model="listQuery.host" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-          <el-button type="primary" icon="plus" v-if="hasPerm('index:add')" @click="showCreate">添加 </el-button>
+          <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -47,6 +47,7 @@
       :page-sizes="[10, 20, 50, 100]"
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
+
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 300px; margin-left:50px;' label="right">
@@ -125,6 +126,7 @@
       return {
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
+        listOne : [],
         alltype : [],
         listLoading: false,//数据加载等待动画
         listQuery: {
@@ -179,8 +181,16 @@
       }
     
     },
+    
+     watch: {
+      
+        applicationServer (now,old) {
+        console.log(now,old)
+      }
+    },
     created() {
       this.getList();
+      this.getOneList();
       // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
       //   this.getAllRoles();
       // }
@@ -223,13 +233,28 @@
         //查询列表
         this.listLoading = true;
         this.api({
-          
+
           url: "/serverConfig/listServerConfig",
           method: "get",
           params: this.listQuery
         }).then(data => {
           this.listLoading = false;
           this.list = data.list;
+          this.totalCount = data.totalCount;
+        })
+      },
+
+      getOneList() {
+        //查询列表
+        this.listLoading = true;
+        this.api({
+          
+          url: "/portionConfig/listPortionOneConfig",
+          method: "get",
+          params: this.listQuery
+        }).then(data => {
+          this.listLoading = false;
+          this.listOne = data.list;
           this.totalCount = data.totalCount;
         })
       },
@@ -253,22 +278,51 @@
         return (this.listQuery.pageNum - 1) * this.listQuery.pageRow + $index + 1
       },
       showCreate() {
-        //显示新增对话框
-        this.tempScriptConfig.host                  = "";
-        this.tempScriptConfig.applicationServer     = "";
-        // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
-        this.tempScriptConfig.sysVersion            = "";
-        this.tempScriptConfig.userName              = "";
-        this.tempScriptConfig.password              = "";
-        this.tempScriptConfig.dbUsername            = "";
-        this.tempScriptConfig.dbPassword            = "";
-        this.tempScriptConfig.subject               = "";
-        this.tempScriptConfig.systemType            = "";
-        this.tempScriptConfig.crontab               = "";
-        this.tempScriptConfig.execTime              = "";
-      
-        this.dialogStatus = "create"
-        this.dialogFormVisible = true
+
+        let shellOne = this.listOne[0];
+        if (shellOne != undefined){
+            //获取已选择的sysVersion
+            let sysVersion  = shellOne.sysVersion;
+            //定义遍历数组
+            var arrStringTypes = new Array();
+            //以and分割 将类型存储数组中
+            for(var oldType in sysVersion.split(",")){
+                // vue是数组类型是用push赋值
+                arrStringTypes.push(sysVersion.split(",")[oldType]+'');
+              }
+            //显示新增对话框
+
+            this.tempScriptConfig.host                  = shellOne.IP;
+            this.tempScriptConfig.applicationServer     = "";
+            // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
+            this.tempScriptConfig.sysVersion            = arrStringTypes;
+            this.tempScriptConfig.userName              = "";
+            this.tempScriptConfig.password              = "";
+            this.tempScriptConfig.dbUsername            = "";
+            this.tempScriptConfig.dbPassword            = "";
+            this.tempScriptConfig.subject               = "";
+            this.tempScriptConfig.systemType            = "";
+            this.tempScriptConfig.crontab               = "";
+            this.tempScriptConfig.execTime              = shellOne.execTime;
+            this.dialogStatus = "create"
+            this.dialogFormVisible = true
+        }else{
+            this.tempScriptConfig.host                  = "";
+            this.tempScriptConfig.applicationServer     = "";
+            // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
+            this.tempScriptConfig.sysVersion            = "";
+            this.tempScriptConfig.userName              = "";
+            this.tempScriptConfig.password              = "";
+            this.tempScriptConfig.dbUsername            = "";
+            this.tempScriptConfig.dbPassword            = "";
+            this.tempScriptConfig.subject               = "";
+            this.tempScriptConfig.systemType            = "";
+            this.tempScriptConfig.crontab               = "";
+            this.tempScriptConfig.execTime              = "";
+            this.dialogStatus = "create"
+            this.dialogFormVisible = true
+        }
+   
       },
       showUpdate($index) {
         debugger
@@ -295,13 +349,14 @@
         this.tempScriptConfig.systemType            = shell.systemType;
         this.tempScriptConfig.crontab               = shell.crontab;
         this.tempScriptConfig.execTime              = shell.execTime;
-        this.tempScriptConfig.deleteStatus = '1';
-        this.tempScriptConfig.id           = shell.id;
-        this.dialogStatus                  = "update"
-        this.dialogFormVisible             = true
+        this.tempScriptConfig.deleteStatus          = '1';
+        this.tempScriptConfig.id                    = shell.id;
+        this.dialogStatus                           = "update"
+        this.dialogFormVisible                      = true
       },
       
       createScript() {
+    
         let _vue = this;
         //添加新配置
         this.api({
@@ -311,13 +366,15 @@
         }).then(() => {
           _vue.$message.success("新增成功")
           this.getList();
+          this.getOneList();
           this.dialogFormVisible = false
         })
       },
       updateScript() {
         //修改配置信息
-        let _vue = this;
         debugger
+        let _vue = this;
+        
         this.api({
           url: "/serverConfig/updateServer",
           method: "post",
@@ -334,6 +391,7 @@
             duration: 1 * 1000,
             onClose: () => {
               _vue.getList();
+              _vue.getOneList();
             }
           })
         })
