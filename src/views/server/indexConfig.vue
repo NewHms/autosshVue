@@ -7,6 +7,7 @@
           <el-input v-model="listQuery.host" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
+          <el-button type="text" prefix-icon="el-icon-search" @click="flushScheduler" style="float:right">刷新定时器</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -128,6 +129,7 @@
         list: [],//表格的数据
         listOne : [],
         alltype : [],
+        e       : "",
         listLoading: false,//数据加载等待动画
         listQuery: {
           pageNum: 1,//页码
@@ -179,7 +181,7 @@
         },
         
       }
-    
+
     },
     
      watch: {
@@ -230,6 +232,7 @@
         })
       },
       getList() {
+        // debugger
         //查询列表
         this.listLoading = true;
         this.api({
@@ -241,6 +244,19 @@
           this.listLoading = false;
           this.list = data.list;
           this.totalCount = data.totalCount;
+        })
+      },
+
+      flushScheduler() {
+        // debugger
+        //刷新定时器
+        let _vue = this;
+        this.listLoading = false;
+        this.api({
+          url: "/serverConfig/flushScheduler",
+          method: "get"
+        }).catch(() => {
+            _vue.$message.success("刷新成功")
         })
       },
 
