@@ -257,6 +257,7 @@
           method: "get"
         }).catch(() => {
             _vue.$message.success("刷新成功")
+            _vue.getList()
         })
       },
 

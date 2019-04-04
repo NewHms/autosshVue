@@ -54,7 +54,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="适用版本" required>
-          <el-select v-model="tempScriptConfig.sysVersion"  multiple placeholder="" label-width="80px" style='width: 220px;'> 
+          <el-select v-model="tempScriptConfig.sysVersion"  multiple placeholder="请选择" label-width="80px" style='width: 220px;'> 
             <el-option
               v-for="item in alltype"
               :key="item.serverId"
@@ -150,7 +150,7 @@
       // },
       getAllServerType() {
         this.api({
-          url: "/scriptConfig/getAllServerType",
+          url: "/scriptConfig/getAllSystemType",
           method: "get"
         }).then(data => {
           this.alltype = data.list;
@@ -193,7 +193,7 @@
         //显示新增对话框
         this.tempScriptConfig.IP         = "";
         this.tempScriptConfig.hostName   = "";
-        this.tempScriptConfig.sysVersion = "";
+        this.tempScriptConfig.sysVersion = [];
         this.tempScriptConfig.execTime   = "";
       
         this.dialogStatus = "create"
