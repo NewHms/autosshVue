@@ -25,7 +25,7 @@
         <el-table-column align="center" label="DB 用户名"    prop="dbUsername" width="100"></el-table-column>
         <el-table-column align="center" label="适用版本"     prop="sysVersion"></el-table-column>
         <el-table-column align="center" label="任务名称"     prop="subject"></el-table-column>
-        <el-table-column align="center" label="数据库类型"   prop="systemType"></el-table-column>
+        <el-table-column align="center" label="服务器类型"   prop="systemType"></el-table-column>
         <el-table-column align="center" label="是否自动启动"  prop="crontab" :formatter = "stateFormat" ></el-table-column>
         <!-- el-table-column align="center" label="创建时间"     prop="createTime"></el-table-column> -->
         <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
@@ -91,7 +91,7 @@
           <el-input type="text" v-model="tempScriptConfig.subject">
           </el-input>
         </el-form-item>
-        <el-form-item label="数据库类型"  required label-width="100px">
+        <el-form-item label="服务器类型"  required label-width="100px">
           <el-input type="text" v-model="tempScriptConfig.systemType">
           </el-input>
         </el-form-item>
@@ -105,9 +105,12 @@
           </el-switch>
         </el-form-item>
         <el-form-item label="执行时间" required label-width="100px" >
-        <el-input type="text" v-model="tempScriptConfig.execTime" >
+          <el-input v-model="tempScriptConfig.execTime">                                                  
+            <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
+            <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
           </el-input>
-        </el-form-item>  
+        </el-form-item>
+        <cron v-if="showCronBox" v-model="tempScriptConfig.execTime"  style="width:640px;color:#2c3e50;margin-left:-35px;"></cron> 
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false;alltypes=[]">取 消</el-button>
@@ -121,10 +124,14 @@
 </template>
 <script>
   import {mapGetters} from 'vuex'
-  
+  import cron from './cron'
   export default {
+    components: {
+          cron
+    },
     data() {
-      return {
+      return {    
+        showCronBox: false,
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
         listOne : [],

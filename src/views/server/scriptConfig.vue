@@ -63,7 +63,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="系统版本" >
+        <el-form-item label="系统版本" required >
         <el-input type="text" v-model="tempScriptConfig.systemVersion" >
           </el-input>
         </el-form-item>

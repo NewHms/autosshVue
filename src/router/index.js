@@ -87,7 +87,7 @@ export const asyncRouterMap = [
         name: ' 日检服务器配置', 
         component: _import('server/portionConfig'), 
         meta: {title: '日检服务器配置', icon: 'tree'}, 
-        menu: 'dis_setting'
+        menu: 'sh_portion'
       },
     ]
   },
