@@ -318,7 +318,7 @@
             this.tempScriptConfig.dbUsername            = "";
             this.tempScriptConfig.dbPassword            = "";
             this.tempScriptConfig.subject               = "";
-            this.tempScriptConfig.systemType            = "";
+            this.tempScriptConfig.systemType            = shellOne.systemType;
             this.tempScriptConfig.crontab               = "";
             this.tempScriptConfig.execTime              = shellOne.execTime;
             this.dialogStatus = "create"

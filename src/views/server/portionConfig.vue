@@ -18,11 +18,12 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="IP"      prop="IP"></el-table-column>
-      <el-table-column align="center" label="主机名"   prop="hostName"></el-table-column>
-      <el-table-column align="center" label="适用版本" prop="sysVersion"></el-table-column>
-      <el-table-column align="center" label="执行时间" prop="execTime"></el-table-column>
-      <el-table-column align="center" label="创建时间" prop="createTime"></el-table-column>
+      <el-table-column align="center" label="IP"        prop="IP"></el-table-column>
+      <el-table-column align="center" label="主机名"     prop="hostName"></el-table-column>
+      <el-table-column align="center" label="适用版本"   prop="sysVersion"></el-table-column>
+      <el-table-column align="center" label="数据库类型"  prop="systemType"></el-table-column>
+      <el-table-column align="center" label="执行时间"    prop="execTime"></el-table-column>
+      <el-table-column align="center" label="创建时间"    prop="createTime"></el-table-column>
       <el-table-column align="center" label="编辑"     width="220" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
@@ -45,16 +46,16 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 300px; margin-left:50px;'>
-        <el-form-item label="IP" required >
+        <el-form-item label="IP" required label-width="100px">
           <el-input type="text" v-model="tempScriptConfig.IP">
           </el-input>
         </el-form-item>
-        <el-form-item label="主机名"  required>
+        <el-form-item label="主机名"  required label-width="100px">
           <el-input type="text" v-model="tempScriptConfig.hostName">
           </el-input>
         </el-form-item>
-        <el-form-item label="适用版本" required>
-          <el-select v-model="tempScriptConfig.sysVersion"  multiple placeholder="请选择" label-width="80px" style='width: 220px;'> 
+        <el-form-item label="适用版本" required label-width="100px">
+          <el-select v-model="tempScriptConfig.sysVersion"  multiple placeholder="请选择" label-width="80px" style='width: 200px;'> 
             <el-option
               v-for="item in alltype"
               :key="item.serverId"
@@ -63,12 +64,16 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="执行时间" >
-        <el-input type="text" v-model="tempScriptConfig.execTime" >
+        <el-form-item label="数据库类型"  required label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.systemType">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="执行时间" label-width="100px">
+        <el-input type="text" v-model="tempScriptConfig.execTime" label-width="100px" >
           </el-input>
         </el-form-item>  
       </el-form>
-      <div slot="footer" class="dialog-footer">
+      <div slot="footer" class="dialog-footer" >
         <el-button @click="dialogFormVisible = false;alltypes=[]">取 消</el-button>
         <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
         <el-button type="primary" v-else @click="updateScript">修 改</el-button>
@@ -118,6 +123,7 @@
         tempScriptConfig: {
           IP        : '',
           hostName  : '',
+          systemType  : '',
           sysVersion: [],
           execTime  : ''
         },
@@ -194,6 +200,7 @@
         this.tempScriptConfig.IP         = "";
         this.tempScriptConfig.hostName   = "";
         this.tempScriptConfig.sysVersion = [];
+        this.tempScriptConfig.systemType = "";
         this.tempScriptConfig.execTime   = "";
       
         this.dialogStatus = "create"
@@ -212,6 +219,7 @@
 						arrStringTypes.push(sysVersion.split(",")[oldType]+'');
 					}
         this.tempScriptConfig.sysVersion = [];
+        this.tempScriptConfig.systemType = shell.systemType;
         this.tempScriptConfig.IP           = shell.IP;
         this.tempScriptConfig.hostName     = shell.hostName;
         // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
