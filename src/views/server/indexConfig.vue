@@ -7,6 +7,7 @@
           <el-input v-model="listQuery.host" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
+          <el-button type="text" prefix-icon="el-icon-search" @click="flushScheduler" style="float:right">刷新定时器</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -19,12 +20,13 @@
         </template>
       </el-table-column>
         <el-table-column align="center" label="服务器"       prop="host" width="135"></el-table-column>
+        <!-- <el-table-column align="center" label="实例名"       prop="serviceName" width="135"></el-table-column> -->
         <el-table-column align="center" label="应用服务器"   prop="applicationServer" width="135"></el-table-column>
         <el-table-column align="center" label="用户名"       prop="userName" width="80"></el-table-column>
         <el-table-column align="center" label="DB 用户名"    prop="dbUsername" width="100"></el-table-column>
         <el-table-column align="center" label="适用版本"     prop="sysVersion"></el-table-column>
         <el-table-column align="center" label="任务名称"     prop="subject"></el-table-column>
-        <el-table-column align="center" label="数据库类型"   prop="systemType"></el-table-column>
+        <el-table-column align="center" label="服务器类型"   prop="systemType"></el-table-column>
         <el-table-column align="center" label="是否自动启动"  prop="crontab" :formatter = "stateFormat" ></el-table-column>
         <!-- el-table-column align="center" label="创建时间"     prop="createTime"></el-table-column> -->
         <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
@@ -54,6 +56,14 @@
                <!--label-width="100px" 设置长度 -->
         <el-form-item label="服务器"  required  label-width="100px">
           <el-input type="text" v-model="tempScriptConfig.host">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="实例名"    label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.serviceName">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="端口"  required  label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.post">
           </el-input>
         </el-form-item>
         <el-form-item label="应用服务器"  required  label-width="100px">
@@ -90,7 +100,7 @@
           <el-input type="text" v-model="tempScriptConfig.subject">
           </el-input>
         </el-form-item>
-        <el-form-item label="数据库类型"  required label-width="100px">
+        <el-form-item label="服务器类型"  required label-width="100px">
           <el-input type="text" v-model="tempScriptConfig.systemType">
           </el-input>
         </el-form-item>
@@ -104,9 +114,12 @@
           </el-switch>
         </el-form-item>
         <el-form-item label="执行时间" required label-width="100px" >
-        <el-input type="text" v-model="tempScriptConfig.execTime" >
+          <el-input v-model="tempScriptConfig.execTime">                                                  
+            <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
+            <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
           </el-input>
-        </el-form-item>  
+        </el-form-item>
+        <cron v-if="showCronBox" v-model="tempScriptConfig.execTime"  style="width:640px;color:#2c3e50;margin-left:-35px;"></cron> 
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false;alltypes=[]">取 消</el-button>
@@ -120,14 +133,19 @@
 </template>
 <script>
   import {mapGetters} from 'vuex'
-  
+  import cron from './cron'
   export default {
+    components: {
+          cron
+    },
     data() {
-      return {
+      return {    
+        showCronBox: false,
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
         listOne : [],
         alltype : [],
+        e       : "",
         listLoading: false,//数据加载等待动画
         listQuery: {
           pageNum: 1,//页码
@@ -165,6 +183,8 @@
         },
         tempScriptConfig: {
           host               : '',
+          serviceName        : '',
+          post               : '',
           applicationServer  : '',
           userName           : '',
           dbUsername         : '',
@@ -179,7 +199,7 @@
         },
         
       }
-    
+
     },
     
      watch: {
@@ -230,6 +250,7 @@
         })
       },
       getList() {
+        // debugger
         //查询列表
         this.listLoading = true;
         this.api({
@@ -241,6 +262,20 @@
           this.listLoading = false;
           this.list = data.list;
           this.totalCount = data.totalCount;
+        })
+      },
+
+      flushScheduler() {
+        // debugger
+        //刷新定时器
+        let _vue = this;
+        this.listLoading = false;
+        this.api({
+          url: "/serverConfig/flushScheduler",
+          method: "get"
+        }).catch(() => {
+            _vue.$message.success("刷新成功")
+            _vue.getList()
         })
       },
 
@@ -293,6 +328,8 @@
             //显示新增对话框
 
             this.tempScriptConfig.host                  = shellOne.IP;
+            this.tempScriptConfig.serviceName           = "";
+            this.tempScriptConfig.post                  = "";
             this.tempScriptConfig.applicationServer     = "";
             // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
             this.tempScriptConfig.sysVersion            = arrStringTypes;
@@ -301,13 +338,15 @@
             this.tempScriptConfig.dbUsername            = "";
             this.tempScriptConfig.dbPassword            = "";
             this.tempScriptConfig.subject               = "";
-            this.tempScriptConfig.systemType            = "";
+            this.tempScriptConfig.systemType            = shellOne.systemType;
             this.tempScriptConfig.crontab               = "";
             this.tempScriptConfig.execTime              = shellOne.execTime;
             this.dialogStatus = "create"
             this.dialogFormVisible = true
         }else{
             this.tempScriptConfig.host                  = "";
+            this.tempScriptConfig.serviceName           = "";
+            this.tempScriptConfig.post                  = "";
             this.tempScriptConfig.applicationServer     = "";
             // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
             this.tempScriptConfig.sysVersion            = "";
@@ -338,6 +377,8 @@
 					}
         this.tempScriptConfig.sysVersion = [];
         this.tempScriptConfig.host                  = shell.host;
+        this.tempScriptConfig.serviceName           = shell.serviceName;
+        this.tempScriptConfig.post                  = shell.post;
         this.tempScriptConfig.applicationServer     = shell.applicationServer;
         // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
         this.tempScriptConfig.sysVersion            = arrStringTypes;
