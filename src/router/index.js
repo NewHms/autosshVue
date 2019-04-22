@@ -88,6 +88,15 @@ export const asyncRouterMap = [
         component: _import('server/portionConfig'), 
         meta: {title: '日检服务器配置', icon: 'tree'}, 
         menu: 'sh_portion'
+
+      },
+      {
+        path: 'daily_log', 
+        name: ' 日志', 
+        component: _import('server/dailyLog'), 
+        meta: {title: '日志', icon: 'tree'}, 
+        menu: 'daliy_log'
+        
       },
       {
         path: 'daily_log', 
