@@ -20,6 +20,7 @@
         </template>
       </el-table-column>
         <el-table-column align="center" label="服务器"       prop="host" width="135"></el-table-column>
+        <!-- <el-table-column align="center" label="实例名"       prop="serviceName" width="135"></el-table-column> -->
         <el-table-column align="center" label="应用服务器"   prop="applicationServer" width="135"></el-table-column>
         <el-table-column align="center" label="用户名"       prop="userName" width="80"></el-table-column>
         <el-table-column align="center" label="DB 用户名"    prop="dbUsername" width="100"></el-table-column>
@@ -55,6 +56,14 @@
                <!--label-width="100px" 设置长度 -->
         <el-form-item label="服务器"  required  label-width="100px">
           <el-input type="text" v-model="tempScriptConfig.host">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="实例名"    label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.serviceName">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="端口"  required  label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.post">
           </el-input>
         </el-form-item>
         <el-form-item label="应用服务器"  required  label-width="100px">
@@ -174,6 +183,8 @@
         },
         tempScriptConfig: {
           host               : '',
+          serviceName        : '',
+          post               : '',
           applicationServer  : '',
           userName           : '',
           dbUsername         : '',
@@ -317,6 +328,8 @@
             //显示新增对话框
 
             this.tempScriptConfig.host                  = shellOne.IP;
+            this.tempScriptConfig.serviceName           = "";
+            this.tempScriptConfig.post                  = "";
             this.tempScriptConfig.applicationServer     = "";
             // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
             this.tempScriptConfig.sysVersion            = arrStringTypes;
@@ -332,6 +345,8 @@
             this.dialogFormVisible = true
         }else{
             this.tempScriptConfig.host                  = "";
+            this.tempScriptConfig.serviceName           = "";
+            this.tempScriptConfig.post                  = "";
             this.tempScriptConfig.applicationServer     = "";
             // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
             this.tempScriptConfig.sysVersion            = "";
@@ -362,6 +377,8 @@
 					}
         this.tempScriptConfig.sysVersion = [];
         this.tempScriptConfig.host                  = shell.host;
+        this.tempScriptConfig.serviceName           = shell.serviceName;
+        this.tempScriptConfig.post                  = shell.post;
         this.tempScriptConfig.applicationServer     = shell.applicationServer;
         // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
         this.tempScriptConfig.sysVersion            = arrStringTypes;
