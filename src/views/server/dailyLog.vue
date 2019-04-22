@@ -11,7 +11,8 @@
     </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row>
+              highlight-current-row :row-style="checkDel">
+      <!-- <span v-if="scope.row.execStatus=2" style="color:red">{{ scope.row.execStatus }}</span>         -->
       <el-table-column align="center" label="序号"     prop="id" width="40">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
@@ -21,8 +22,8 @@
       <el-table-column align="center" label="用户名"      prop="USER"></el-table-column>
       <el-table-column align="center" label="命令"        prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
       <el-table-column align="center" width="400" label="执行结果"    prop="execResult" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-      <el-table-column align="center" width="80"  label="执行状态"    prop="execStatus"></el-table-column>
-      <el-table-column align="center" label="执行时间"    prop="execTime"></el-table-column>
+      <el-table-column align="center" width="80"  label="执行状态"    prop="execStatus" :cell-class-name="checkDel"></el-table-column>
+      <el-table-column align="center" label="执行时间"    prop="execTime" width="100"></el-table-column>
       <el-table-column align="center" width="80"  label="执行次数"    prop="execNum"></el-table-column>
       <!-- <el-table-column align="center" width="70"  v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
@@ -101,9 +102,9 @@
       // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
       //   this.getAllRoles();
       // }
-      if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
-        this.getAllServerType();
-      }
+      // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
+      //   this.getAllServerType();
+      // }
     },
     computed: {
       ...mapGetters([
@@ -111,6 +112,17 @@
       ])
     },
     methods: {
+      checkDel({row, column, rowIndex, columnIndex}){
+        if (this.list[rowIndex].execStatus==2){
+          return 'color: #FF0000;font-weight: 500;'
+        }
+        if (this.list[rowIndex].execStatus==1){
+          return 'color: #EE3B3B;font-weight: 500;'
+        }
+        if (this.list[rowIndex].execStatus==0){
+          return 'color: #008000;font-weight: 500;'
+        }
+      },
       getList() {
         //查询列表
         this.listLoading = true;
@@ -169,3 +181,14 @@
     }
   }
 </script>
+<style>
+  .el-table .red{
+    background: #FF0000;
+  }
+  .el-table .yellow{
+    background: #FFFF00;
+  }
+   .el-table .gree{
+    background: #008000;
+  }
+</style>

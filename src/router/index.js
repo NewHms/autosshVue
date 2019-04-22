@@ -90,14 +90,7 @@ export const asyncRouterMap = [
         menu: 'sh_portion'
 
       },
-      {
-        path: 'daily_log', 
-        name: ' 日志', 
-        component: _import('server/dailyLog'), 
-        meta: {title: '日志', icon: 'tree'}, 
-        menu: 'daliy_log'
-        
-      },
+      
       {
         path: 'daily_log', 
         name: ' 日志', 
