@@ -117,7 +117,7 @@
           return 'color: #FF0000;font-weight: 500;'
         }
         if (this.list[rowIndex].execStatus==1){
-          return 'color: #EE3B3B;font-weight: 500;'
+          return 'color: #FFC125;font-weight: 500;'
         }
         if (this.list[rowIndex].execStatus==0){
           return 'color: #008000;font-weight: 500;'
@@ -181,14 +181,3 @@
     }
   }
 </script>
-<style>
-  .el-table .red{
-    background: #FF0000;
-  }
-  .el-table .yellow{
-    background: #FFFF00;
-  }
-   .el-table .gree{
-    background: #008000;
-  }
-</style>
