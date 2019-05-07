@@ -3,7 +3,7 @@
     <div class="filter-container">
       <el-form>
  
-      <el-form-item>
+        <el-form-item>
           <el-input v-model="listQuery.IP" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
@@ -18,13 +18,14 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="IP"        prop="IP"></el-table-column>
-      <el-table-column align="center" label="主机名"     prop="hostName"></el-table-column>
-      <el-table-column align="center" label="适用版本"   prop="sysVersion"></el-table-column>
+      <el-table-column align="center" label="IP"         prop="IP"></el-table-column>
+      <el-table-column align="center" label="主机名"      prop="hostName"></el-table-column>
+      <el-table-column align="center" label="适用版本"    prop="sysVersion"></el-table-column>
       <el-table-column align="center" label="服务器类型"  prop="systemType"></el-table-column>
+      <el-table-column align="center" label="超时时间(s)"    prop="timeOut"  width="100"></el-table-column>
       <el-table-column align="center" label="执行时间"    prop="execTime"></el-table-column>
       <el-table-column align="center" label="创建时间"    prop="createTime"></el-table-column>
-      <el-table-column align="center" label="编辑"     width="220" v-if="hasPerm('scriptConfig:update')">
+      <el-table-column align="center" label="编辑"     width="200" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
           <el-button type="danger" icon="delete" 
@@ -66,6 +67,10 @@
         </el-form-item>
         <el-form-item label="服务器类型"  required label-width="100px">
           <el-input type="text" v-model="tempScriptConfig.systemType">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="超时时间(s)" label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.timeOut">
           </el-input>
         </el-form-item>
         <el-form-item label="执行时间" required label-width="100px" >
@@ -132,6 +137,7 @@
           hostName  : '',
           systemType  : '',
           sysVersion: [],
+          timeOut   : '',
           execTime  : ''
         },
         
@@ -208,6 +214,7 @@
         this.tempScriptConfig.hostName   = "";
         this.tempScriptConfig.sysVersion = [];
         this.tempScriptConfig.systemType = "";
+        this.tempScriptConfig.timeOut    = "";
         this.tempScriptConfig.execTime   = "";
       
         this.dialogStatus = "create"
@@ -231,6 +238,7 @@
         this.tempScriptConfig.hostName     = shell.hostName;
         // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
         this.tempScriptConfig.sysVersion   = arrStringTypes;
+        this.tempScriptConfig.timeOut      = shell.timeOut;
         this.tempScriptConfig.execTime     = shell.execTime;
         this.tempScriptConfig.deleteStatus = '1';
         this.tempScriptConfig.id           = shell.id;

@@ -3,6 +3,7 @@ import Router from 'vue-router'
 // in development env not use Lazy Loading,because Lazy Loading too many pages will cause webpack hot update too slow.so only in production use Lazy Loading
 /* layout */
 import Layout from '../views/layout/Layout'
+import Layout1 from '../views/layout/Layout'
 
 const _import = require('./_import_' + process.env.NODE_ENV)
 Vue.use(Router)
@@ -88,9 +89,41 @@ export const asyncRouterMap = [
         component: _import('server/portionConfig'), 
         meta: {title: '日检服务器配置', icon: 'tree'}, 
         menu: 'sh_portion'
+      },
+      // {
+      //   path: '/server',
+      //   // component:  _import('server/dailyConfig'),
+      //   // component:  _import('server/dailyConfigPriv'),
+      //   name: '',
+      //   redirect : '/server/',
+      //   meta: {title: '资源配置', icon: 'table'}, 
+      //   menu: 'server',
+      //   children:[
+      //     {
+      //       path: 'daily_config', 
+      //       name: '通用阀值配置', 
+      //       component: _import('server/dailyConfig'), 
+      //       meta: {title: '通用阀值配置', icon: 'tree'}, 
+      //       menu: 'daily_config'
+      //     },
+      //     {
+      //       path: 'daily_config_priv', 
+      //       name: '私有阀值配置', 
+      //       component: _import('server/dailyConfigPriv'), 
+      //       meta: {title: '私有阀值配置', icon: 'tree'}, 
+      //       menu: 'daily_config_priv'
+      //     }]
+      // },
 
+      {
+        path: 'daily_config_priv', 
+        name: '私有阀值配置', 
+        component: _import('server/dailyConfigPriv'), 
+        meta: {title: '私有阀值配置', icon: 'tree'}, 
+        menu: 'daily_config'
       },
       
+
       {
         path: 'daily_log', 
         name: ' 日志', 
@@ -98,6 +131,7 @@ export const asyncRouterMap = [
         meta: {title: '日志', icon: 'tree'}, 
         menu: 'daliy_log'
       },
+
     ]
   },
   {path: '*', redirect: '/404', hidden: true}

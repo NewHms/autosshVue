@@ -1,30 +1,40 @@
 <template>
-  <div class="app-container">
-    <div class="filter-container">
+  <div class="app-container">    <div class="filter-container">
       <el-form>
  
       <el-form-item>
           <el-input v-model="listQuery.IP" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-        </el-form-item>
+          <!-- <el-input v-model="listQuery.execStatus" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input> -->
+          <el-button type="danger"  prefix-icon="el-icon-search" @click="getList_fail">失败</el-button>
+          <el-button type="warning" prefix-icon="el-icon-search" @click="getList_warning">告警</el-button>
+          <el-button type="success" prefix-icon="el-icon-search" @click="getList_success">正常</el-button>
+          <el-date-picker
+             v-model="listQuery.dataTime"
+             style="float:right"
+             type="date"
+             placeholder="选择日期"
+             value-format=" yyyy-MM-dd" format="yyyy-MM-dd">
+          </el-date-picker>
+      </el-form-item>
       </el-form>
-    </div>
+  </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
               highlight-current-row :row-style="checkDel">
       <!-- <span v-if="scope.row.execStatus=2" style="color:red">{{ scope.row.execStatus }}</span>         -->
-      <el-table-column align="center" label="序号"     prop="id" width="40">
+      <el-table-column align="center" width="40"     label="序号"       prop="id" >
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="IP"         prop="ip" ></el-table-column>
-      <el-table-column align="center" label="用户名"      prop="USER"></el-table-column>
-      <el-table-column align="center" label="命令"        prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-      <el-table-column align="center" width="400" label="执行结果"    prop="execResult" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-      <el-table-column align="center" width="80"  label="执行状态"    prop="execStatus" :cell-class-name="checkDel"></el-table-column>
-      <el-table-column align="center" label="执行时间"    prop="execTime" width="100"></el-table-column>
-      <el-table-column align="center" width="80"  label="执行次数"    prop="execNum"></el-table-column>
+      <el-table-column align="center" width="130"    label="IP"         prop="ip" ></el-table-column>
+      <el-table-column align="center" width="100"    label="用户名"      prop="USER" ></el-table-column>
+      <el-table-column align="center"                label="命令描述"    prop="shellDesc"  :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+      <el-table-column align="center" width="450"    label="执行结果"    prop="execResult" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+      <el-table-column align="center" width="90"     label="执行状态"    prop="resultStatus" :cell-class-name="checkDel"></el-table-column>
+      <el-table-column align="center" width="100"    label="执行时间"    prop="execTime"></el-table-column>
+      <el-table-column align="center" width="80"     label="执行次数"    prop="execNum"></el-table-column>
       <!-- <el-table-column align="center" width="70"  v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="danger" icon="el-icon-delete" 
@@ -53,6 +63,7 @@
     data() {
       return {
         totalCount: 0, //分页组件--数据总条数
+        dataTime : '',
         list: [],//表格的数据
         alltype : [],
         listLoading: false,//数据加载等待动画
@@ -60,6 +71,25 @@
           pageNum: 1,//页码
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
+          //execStatus : '',
+        },
+        listQuery_fail: {
+           pageNum: 1,//页码
+           pageRow: 50,//每页条数,
+           resultStatus : 'FAIL',
+          //execStatus : '',
+        },
+        listQuery_warning: {
+           pageNum: 1,//页码
+           pageRow: 50,//每页条数,
+           resultStatus : 'WARNING',
+          //execStatus : '',
+        },
+        listQuery_success: {
+           pageNum: 1,//页码
+           pageRow: 50,//每页条数,
+           resultStatus : 'SUCCESS',
+          //execStatus : '',
         },
         // sysVersion1: [{
         //   value:'0',
@@ -86,7 +116,7 @@
         tempScriptConfig: {
           IP         : '',
           USER       : '',
-          shellName  : '',
+          shellDesc  : '',
           execResult : '',
           execStatus : '',
           execTime   : '',
@@ -99,6 +129,7 @@
     },
     created() {
       this.getList();
+      //this.dateTime = new Date()
       // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
       //   this.getAllRoles();
       // }
@@ -113,24 +144,73 @@
     },
     methods: {
       checkDel({row, column, rowIndex, columnIndex}){
-        if (this.list[rowIndex].execStatus==2){
+        if (this.list[rowIndex].resultStatus=='FAIL'){
           return 'color: #FF0000;font-weight: 500;'
         }
-        if (this.list[rowIndex].execStatus==1){
+        if (this.list[rowIndex].resultStatus=='WARNING'){
           return 'color: #FFC125;font-weight: 500;'
         }
-        if (this.list[rowIndex].execStatus==0){
+        if (this.list[rowIndex].resultStatus=='SUCCESS'){
           return 'color: #008000;font-weight: 500;'
         }
       },
       getList() {
         //查询列表
-        this.listLoading = true;
-        this.api({
-          
+        this.listLoading = true;        
+        this.api({ 
           url: "/logConfig/listLog",
           method: "get",
           params: this.listQuery
+
+        }).then(data => {
+          this.listLoading = false;
+          this.list = data.list;
+          this.totalCount = data.totalCount;
+        })
+      },
+    
+      getList_fail() {
+        debugger
+        //查询失败列表
+        this.listLoading = true;
+        this.listQuery_fail.dataTime =  this.listQuery.dataTime
+        this.api({
+          url: "/logConfig/listLog",
+          method: "get",
+          params: this.listQuery_fail
+          
+        }).then(data => {
+          this.listLoading = false;
+          this.list = data.list;
+          this.totalCount = data.totalCount;
+        })
+      },
+
+      getList_warning() {
+        //查询告警列表
+        debugger
+        this.listLoading = true;
+        this.listQuery_warning.dataTime =  this.listQuery.dataTime
+        this.api({
+          url: "/logConfig/listLog",
+          method: "get",
+          params: this.listQuery_warning
+          
+        }).then(data => {
+          this.listLoading = false;
+          this.list = data.list;
+          this.totalCount = data.totalCount;
+        })
+      },
+      getList_success() {
+        //查询成功列表
+        this.listLoading = true;
+        this.listQuery_success.dataTime =  this.listQuery.dataTime
+        this.api({
+          url: "/logConfig/listLog",
+          method: "get",
+          params: this.listQuery_success
+          
         }).then(data => {
           this.listLoading = false;
           this.list = data.list;
@@ -181,3 +261,8 @@
     }
   }
 </script>
+<style scoped>
+.el-table /deep/ .cell.el-tooltip {
+      white-space: pre-wrap;
+  }
+</style>

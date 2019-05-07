@@ -45,6 +45,14 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 300px; margin-left:50px;'>
+        <el-form-item label="当前编号" required >
+          <el-input type="text" v-model="tempScriptConfig.maxCode"  :disabled="true"> 
+          </el-input>
+        </el-form-item>          
+        <el-form-item label="命令编号" required >
+          <el-input type="text" v-model="tempScriptConfig.code"  placeholder="请输入10的倍数" > 
+          </el-input>
+        </el-form-item>       
         <el-form-item label="命令" required >
           <el-input type="text" v-model="tempScriptConfig.shellName">
           </el-input>
@@ -118,10 +126,11 @@
           create: '新建用户'
         },
         tempScriptConfig: {
-          shellName: '',
-          shellDesc: '',
-          systemType: '',
-          systemVersion: ''
+          code          : '',
+          shellName     : '',
+          shellDesc     : '',
+          systemType    : '',
+          systemVersion : ''
         },
         
       }
@@ -182,23 +191,28 @@
       },
       showCreate() {
         //显示新增对话框
-        this.tempScriptConfig.shellName = "";
-        this.tempScriptConfig.shellDesc = "";
-        this.tempScriptConfig.systemType = "";
+        let shell = this.list[1];
+        this.tempScriptConfig.code          = "";
+        this.tempScriptConfig.maxCode       = shell.maxCode;;
+        this.tempScriptConfig.shellName     = "";
+        this.tempScriptConfig.shellDesc     = "";
+        this.tempScriptConfig.systemType    = "";
         this.tempScriptConfig.systemVersion = "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       },
       showUpdate($index) {
         let shell = this.list[$index];
-        this.tempScriptConfig.shellName = shell.shellName;
-        this.tempScriptConfig.shellDesc = shell.shellDesc;
-        this.tempScriptConfig.systemType = shell.systemType;
+        this.tempScriptConfig.code          = shell.code;
+        this.tempScriptConfig.maxCode       = shell.maxCode;
+        this.tempScriptConfig.shellName     = shell.shellName;
+        this.tempScriptConfig.shellDesc     = shell.shellDesc;
+        this.tempScriptConfig.systemType    = shell.systemType;
         this.tempScriptConfig.systemVersion = shell.systemVersion;
-        this.tempScriptConfig.deleteStatus = '1';
-        this.tempScriptConfig.id = shell.id;
-        this.dialogStatus = "update"
-        this.dialogFormVisible = true
+        this.tempScriptConfig.deleteStatus  = '1';
+        this.tempScriptConfig.id            = shell.id;
+        this.dialogStatus                   = "update"
+        this.dialogFormVisible              = true
       },
       createScript() {
         let _vue = this;

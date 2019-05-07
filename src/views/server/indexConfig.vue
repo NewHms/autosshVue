@@ -113,6 +113,10 @@
             inactive-value="0">
           </el-switch>
         </el-form-item>
+        <el-form-item label="超时时间"  label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.timeOut">
+          </el-input>
+        </el-form-item>
         <el-form-item label="执行时间" required label-width="100px" >
           <el-input v-model="tempScriptConfig.execTime">                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
@@ -192,6 +196,7 @@
           systemType         : '',
           crontab            : '',
           sysVersion         : [],
+          timeOut            : '',
           execTime           : '',
           password           : '',
           dbPassword         : '',
@@ -341,6 +346,7 @@
             this.tempScriptConfig.systemType            = shellOne.systemType;
             this.tempScriptConfig.crontab               = "";
             this.tempScriptConfig.execTime              = shellOne.execTime;
+            this.tempScriptConfig.timeOut               = shellOne.timeOut;
             this.dialogStatus = "create"
             this.dialogFormVisible = true
         }else{
@@ -358,6 +364,7 @@
             this.tempScriptConfig.systemType            = "";
             this.tempScriptConfig.crontab               = "";
             this.tempScriptConfig.execTime              = "";
+            this.tempScriptConfig.timeOut               = "";
             this.dialogStatus = "create"
             this.dialogFormVisible = true
         }
@@ -390,6 +397,7 @@
         this.tempScriptConfig.systemType            = shell.systemType;
         this.tempScriptConfig.crontab               = shell.crontab;
         this.tempScriptConfig.execTime              = shell.execTime;
+        this.tempScriptConfig.timeOut               = shell.timeOut;
         this.tempScriptConfig.deleteStatus          = '1';
         this.tempScriptConfig.id                    = shell.id;
         this.dialogStatus                           = "update"
