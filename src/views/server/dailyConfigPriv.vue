@@ -6,7 +6,6 @@
         <el-form-item>
           <el-input v-model="listQuery.type" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-          <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -18,7 +17,7 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column >
-      <el-table-column align="center" label="code"          prop="code" width="100"></el-table-column>
+      <el-table-column align="center" label="ip"          prop="ip" width="200"></el-table-column>
       <el-table-column align="center" label="监控项"         prop="dailyDesc"></el-table-column>
       <el-table-column align="center" label="固定阀值">
         <el-table-column align="center" label="WARING"   prop="waring"   width="100"></el-table-column>
@@ -28,6 +27,7 @@
         <el-table-column align="center" label="WARING"   prop="waringPriv"   width="100"></el-table-column>
         <el-table-column align="center" label="CRITICAL"  prop="criticalPriv" width="100"></el-table-column>
       </el-table-column>
+      <el-table-column align="center" label="判断规则"   prop="dailyRule" width="90"></el-table-column>
       <el-table-column align="center" label="编辑"           width="100" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
@@ -46,29 +46,33 @@
     </el-pagination>
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
-               style='width: 300px; margin-left:50px;'>
-        <el-form-item label="code"  required label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.code" disabled="true">
+               style='width: 350px; margin-left:50px;'>
+        <el-form-item label="ip"  required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.ip" disabled="true">
           </el-input>
         </el-form-item>
-        <el-form-item label="监控项"  required label-width="120px">
+        <el-form-item label="监控项"  required label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.dailyDesc" disabled="true">
           </el-input>
         </el-form-item>
-        <el-form-item label="WARNING" required  label-width="120px">
+        <el-form-item label="WARNING" required  label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.waring" disabled="true">
           </el-input>
         </el-form-item>
-        <el-form-item label="CRITICAL" required   label-width="120px">
+        <el-form-item label="CRITICAL" required   label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.critical" disabled="true">
           </el-input>
         </el-form-item>
-        <el-form-item label="WARNING_PRIV" required label-width="120px">
+        <el-form-item label="WARNING_PRIV" required label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.waringPriv">
           </el-input>
         </el-form-item>
-        <el-form-item label="CRITICAL_PRIV" required label-width="120px">
+        <el-form-item label="CRITICAL_PRIV" required label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.criticalPriv">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="判断规则" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyRule" disabled="true">
           </el-input>
         </el-form-item>
       </el-form>  
@@ -105,12 +109,12 @@
         },
         tempScriptConfig: {
           dailyDesc    : '',
-          code         : '',
+          ip           : '',
           waring       : '',
           critical     : '',
-          waringPriv  : '',
-          criticalPriv : ''
-          
+          waringPriv   : '',
+          criticalPriv : '',
+          dailyRule    : ''
         },
         
       }
@@ -174,41 +178,15 @@
         //表格序号
         return (this.listQuery.pageNum - 1) * this.listQuery.pageRow + $index + 1
       },
-      showCreate() {
-        debugger
-        let shellOne                     = this.listOne[0];
-        if (shellOne != undefined){
-          //显示新增对话框
-          this.tempScriptConfig.waring       = "";
-          this.tempScriptConfig.code         = shellOne.code;
-          this.tempScriptConfig.dailyDesc    = shellOne.dailyDesc;
-          this.tempScriptConfig.critical     = "";
-          this.tempScriptConfig.waringPriv  = "";
-          this.tempScriptConfig.criticalPriv = "";
-          this.dialogStatus = "create"
-          this.dialogFormVisible = true
-        }
-        else{
-          //显示新增对话框
-          this.tempScriptConfig.waring     = "";
-          this.tempScriptConfig.code       = "";
-          this.tempScriptConfig.dailyDesc  = "";
-          this.tempScriptConfig.critical   = "";
-          this.tempScriptConfig.waringPriv  = "";
-          this.tempScriptConfig.criticalPriv = "";
-          this.dialogStatus = "create"
-          this.dialogFormVisible = true
-        }
-        
-      },
       showUpdate($index) {
         debugger
         let shell = this.list[$index];
         this.tempScriptConfig.waring       = shell.waring;
-        this.tempScriptConfig.code         = shell.code;
+        this.tempScriptConfig.ip           = shell.ip;
         this.tempScriptConfig.critical     = shell.critical;
-        this.tempScriptConfig.waringPriv  = shell.waringPriv;
+        this.tempScriptConfig.waringPriv   = shell.waringPriv;
         this.tempScriptConfig.criticalPriv = shell.criticalPriv;
+        this.tempScriptConfig.dailyRule    = shell.dailyRule,
         this.tempScriptConfig.dailyDesc    = shell.dailyDesc;
         this.tempScriptConfig.id           = shell.id;
         this.dialogStatus                  = "update"
@@ -234,7 +212,7 @@
         let _vue = this;
         debugger
         this.api({
-          url: "/dailyConfig/updateConfig",
+          url: "/dailyConfig/updateIdConfig",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {

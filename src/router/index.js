@@ -3,7 +3,7 @@ import Router from 'vue-router'
 // in development env not use Lazy Loading,because Lazy Loading too many pages will cause webpack hot update too slow.so only in production use Lazy Loading
 /* layout */
 import Layout from '../views/layout/Layout'
-import Layout1 from '../views/layout/Layout'
+import { Loading } from 'element-ui';
 
 const _import = require('./_import_' + process.env.NODE_ENV)
 Vue.use(Router)
@@ -51,7 +51,11 @@ export const asyncRouterMap = [
     meta: {title: '用户权限', icon: 'table'},
     children: [
       {
-        path: '', name: '用户列表', component: _import('user/user'), meta: {title: '用户列表', icon: 'user'}, menu: 'user'
+        path: '', 
+        name: '用户列表', 
+        component: _import('user/user'), 
+        meta: {title: '用户列表', icon: 'user'}, 
+        menu: 'user'
       },
       {
         path: 'role',
@@ -90,40 +94,44 @@ export const asyncRouterMap = [
         meta: {title: '日检服务器配置', icon: 'tree'}, 
         menu: 'sh_portion'
       },
-      // {
-      //   path: '/server',
-      //   // component:  _import('server/dailyConfig'),
-      //   // component:  _import('server/dailyConfigPriv'),
-      //   name: '',
-      //   redirect : '/server/',
-      //   meta: {title: '资源配置', icon: 'table'}, 
-      //   menu: 'server',
-      //   children:[
-      //     {
-      //       path: 'daily_config', 
-      //       name: '通用阀值配置', 
-      //       component: _import('server/dailyConfig'), 
-      //       meta: {title: '通用阀值配置', icon: 'tree'}, 
-      //       menu: 'daily_config'
-      //     },
-      //     {
-      //       path: 'daily_config_priv', 
-      //       name: '私有阀值配置', 
-      //       component: _import('server/dailyConfigPriv'), 
-      //       meta: {title: '私有阀值配置', icon: 'tree'}, 
-      //       menu: 'daily_config_priv'
-      //     }]
-      // },
 
+      {
+        path: 'daily_config', 
+        name: '固定阀值配置', 
+        component: _import('server/dailyConfig'), 
+        meta: {title: '固定阀值配置', icon: 'tree'}, 
+        menu: 'daily_config'
+      },
       {
         path: 'daily_config_priv', 
         name: '私有阀值配置', 
         component: _import('server/dailyConfigPriv'), 
         meta: {title: '私有阀值配置', icon: 'tree'}, 
-        menu: 'daily_config'
+        menu: 'daily_config_priv'
       },
-      
-
+      // {
+      //   path: '/daily',
+      //   name: '',
+      //   meta: {title: '资源配置', icon: 'tree'}, 
+      //   //component: Layout, 
+      //   menu: 'daily',
+      //   children:[
+      //     {
+      //       path: 'daily_config',
+      //       name: '通用阀值配置',
+      //       meta: {title: '通用阀值配置', icon: 'tree'}, 
+      //       component: _import('server/test/dailyConfig').default, 
+      //       menu: 'daily_config',
+      //     },
+      //     {
+      //       path: 'daily_config_priv', 
+      //       name: '私有阀值配置', 
+      //       component: _import('server/test/dailyConfigPriv'), 
+      //       meta: {title: '私有阀值配置', icon: 'tree'}, 
+      //       menu: 'daily_config_priv'
+      //     },
+      //   ]
+      // },   
       {
         path: 'daily_log', 
         name: ' 日志', 

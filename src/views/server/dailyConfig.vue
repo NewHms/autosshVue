@@ -18,17 +18,17 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="code"          prop="code"></el-table-column>
-      <el-table-column align="center" label="监控项"         prop="dailyDesc"></el-table-column>
-      <el-table-column align="center" label="WARNING 阀值"   prop="waring"></el-table-column>
-      <el-table-column align="center" label="CRITICAL 阀值"  prop="critical"></el-table-column>
+      <el-table-column align="center" label="code"             prop="code"></el-table-column>
+      <el-table-column align="center" label="监控项"            prop="dailyDesc"></el-table-column>
+      <el-table-column align="center" label="WARING 阀值"      prop="waring"></el-table-column>
+      <el-table-column align="center" label="CRITICAL 阀值"     prop="critical"></el-table-column>
+      <el-table-column align="center" label="判断规则"          prop="dailyRule" width="100"></el-table-column>
       <el-table-column align="center" label="编辑"           width="100" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
         </template>
       </el-table-column>
     </el-table>
-   
     <el-pagination
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
@@ -40,21 +40,25 @@
     </el-pagination>
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
-               style='width: 300px; margin-left:50px;'>
-        <el-form-item label="code"  required label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.code">
+               style='width: 350px; margin-left:50px;'>
+        <el-form-item label="code"  required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.code" disabled="true">
           </el-input>
         </el-form-item>
-        <el-form-item label="监控项"  required label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.dailyDesc">
+        <el-form-item label="监控项"  required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyDesc" disabled="true">
           </el-input>
         </el-form-item>
-        <el-form-item label="WARNING 阀值" required label-width="120px">
+        <el-form-item label="WARING 阀值" required label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.waring">
           </el-input>
         </el-form-item>
-        <el-form-item label="CRITICAL 阀值" required label-width="120px">
+        <el-form-item label="CRITICAL 阀值" required label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.critical">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="判断规则" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyRule">
           </el-input>
         </el-form-item>
       </el-form>  
@@ -90,10 +94,11 @@
           create: '新增配置'
         },
         tempScriptConfig: {
-          dailyDesc : '',
-          code      : '',
-          waring    : '',
-          critical  : ''
+          dailyDesc    : '',
+          code         : '',
+          waring       : '',
+          critical     : '',
+          dailyRule    : ''
         },
         
       }
@@ -111,11 +116,12 @@
     methods: {
       
       getList() {
+
         //查询列表
         this.listLoading = true;
         this.api({
           
-          url: "/dailyConfig/listConfig",
+          url: "/dailyConfig/listDistConfig",
           method: "get",
           params: this.listQuery
         }).then(data => {
@@ -162,19 +168,21 @@
         let shellOne                     = this.listOne[0];
         if (shellOne != undefined){
           //显示新增对话框
-          this.tempScriptConfig.waring     = "";
-          this.tempScriptConfig.code       = shellOne.code;
-          this.tempScriptConfig.dailyDesc  = shellOne.dailyDesc;
-          this.tempScriptConfig.critical   = "";
+          this.tempScriptConfig.waring       = "";
+          this.tempScriptConfig.code         = shellOne.code;
+          this.tempScriptConfig.dailyDesc    = shellOne.dailyDesc;
+          this.tempScriptConfig.critical     = "";
+          this.tempScriptConfig.dailyRule    = "",
           this.dialogStatus = "create"
           this.dialogFormVisible = true
         }
         else{
           //显示新增对话框
-          this.tempScriptConfig.waring     = "";
-          this.tempScriptConfig.code       = "";
-          this.tempScriptConfig.dailyDesc  = "";
-          this.tempScriptConfig.critical   = "";
+          this.tempScriptConfig.waring       = "";
+          this.tempScriptConfig.code         = "";
+          this.tempScriptConfig.dailyDesc    = "";
+          this.tempScriptConfig.critical     = "";
+          this.tempScriptConfig.dailyRule    = "",
           this.dialogStatus = "create"
           this.dialogFormVisible = true
         }
@@ -187,6 +195,7 @@
         this.tempScriptConfig.code         = shell.code;
         this.tempScriptConfig.critical     = shell.critical;
         this.tempScriptConfig.dailyDesc    = shell.dailyDesc;
+        this.tempScriptConfig.dailyRule    = shell.dailyRule,
         this.tempScriptConfig.id           = shell.id;
         this.dialogStatus                  = "update"
         this.dialogFormVisible             = true
@@ -211,7 +220,7 @@
         let _vue = this;
         debugger
         this.api({
-          url: "/dailyConfig/updateConfig",
+          url: "/dailyConfig/updateCodeConfig",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
