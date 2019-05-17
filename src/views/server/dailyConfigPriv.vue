@@ -4,27 +4,28 @@
       <el-form>
  
         <el-form-item>
-          <el-input v-model="listQuery.type" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
+          <el-input v-model="listQuery.ip" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
         </el-form-item>
       </el-form>
     </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row>
-      <el-table-column align="center" label="序号"     prop="id" width="40">
+              highlight-current-row height="530">
+      <el-table-column align="center" label="序号"     prop="id" width="40" fixed="left">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column >
-      <el-table-column align="center" label="ip"          prop="ip" width="200"></el-table-column>
+      <el-table-column align="center" label="IP"          prop="ip" width="200" sortable></el-table-column>
+      <el-table-column align="center" label="TYPE"          prop="type" width="80"></el-table-column>
       <el-table-column align="center" label="监控项"         prop="dailyDesc"></el-table-column>
-      <el-table-column align="center" label="固定阀值">
-        <el-table-column align="center" label="WARING"   prop="waring"   width="100"></el-table-column>
+      <el-table-column align="center" label="通用阀值">
+        <el-table-column align="center" label="WARNING"   prop="wanring"   width="100"></el-table-column>
         <el-table-column align="center" label="CRITICAL"  prop="critical" width="100"></el-table-column>
       </el-table-column>
       <el-table-column align="center" label="私有阀值">
-        <el-table-column align="center" label="WARING"   prop="waringPriv"   width="100"></el-table-column>
+        <el-table-column align="center" label="WARNING"   prop="warningPriv"   width="100"></el-table-column>
         <el-table-column align="center" label="CRITICAL"  prop="criticalPriv" width="100"></el-table-column>
       </el-table-column>
       <el-table-column align="center" label="判断规则"   prop="dailyRule" width="90"></el-table-column>
@@ -110,9 +111,9 @@
         tempScriptConfig: {
           dailyDesc    : '',
           ip           : '',
-          waring       : '',
+          warning      : '',
           critical     : '',
-          waringPriv   : '',
+          warningPriv  : '',
           criticalPriv : '',
           dailyRule    : ''
         },
@@ -132,6 +133,7 @@
     methods: {
       
       getList() {
+        debugger
         //查询列表
         this.listLoading = true;
         this.api({
@@ -181,10 +183,10 @@
       showUpdate($index) {
         debugger
         let shell = this.list[$index];
-        this.tempScriptConfig.waring       = shell.waring;
+        this.tempScriptConfig.warning      = shell.warning;
         this.tempScriptConfig.ip           = shell.ip;
         this.tempScriptConfig.critical     = shell.critical;
-        this.tempScriptConfig.waringPriv   = shell.waringPriv;
+        this.tempScriptConfig.warningPriv  = shell.warningPriv;
         this.tempScriptConfig.criticalPriv = shell.criticalPriv;
         this.tempScriptConfig.dailyRule    = shell.dailyRule,
         this.tempScriptConfig.dailyDesc    = shell.dailyDesc;

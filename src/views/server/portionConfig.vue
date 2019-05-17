@@ -11,20 +11,20 @@
       </el-form>
     </div>
     
-    <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row>
-      <el-table-column align="center" label="序号"     prop="id" width="40">
+    <el-table :data="list" v-loading.body="listLoading" border element-loading-text="拼命加载中" fit
+              highlight-current-row height="530">
+      <el-table-column align="center" label="序号"     prop="id" width="40" fixed="left">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="IP"         prop="IP"></el-table-column>
+      <el-table-column align="center" label="IP"         prop="IP" sortable></el-table-column>
       <el-table-column align="center" label="主机名"      prop="hostName"></el-table-column>
       <el-table-column align="center" label="适用版本"    prop="sysVersion"></el-table-column>
       <el-table-column align="center" label="服务器类型"  prop="systemType"></el-table-column>
       <el-table-column align="center" label="超时时间(s)"    prop="timeOut"  width="100"></el-table-column>
       <el-table-column align="center" label="执行时间"    prop="execTime"></el-table-column>
-      <el-table-column align="center" label="创建时间"    prop="createTime"></el-table-column>
+      <el-table-column align="center" label="创建时间"    prop="createTime" sortable></el-table-column>
       <el-table-column align="center" label="编辑"     width="200" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>

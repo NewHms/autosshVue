@@ -12,16 +12,15 @@
     </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row>
-      <el-table-column align="center" label="序号" width="40">
+              highlight-current-row height="530">
+      <el-table-column align="center" label="序号" width="40" fixed="left">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>        
-      <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+      <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu" sortable></el-table-column>
       <el-table-column align="center" label="命令描述" prop="shellDesc"></el-table-column>
       <el-table-column align="center" label="适用系统" prop="systemType"></el-table-column>
-      <el-table-column align="center" label="系统版本" prop="systemVersion"></el-table-column>
       <el-table-column align="center" label="创建时间" prop="createTime"></el-table-column>
       <el-table-column align="center" label="编辑" width="220" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
@@ -70,10 +69,6 @@
               :value="item.serverType">
             </el-option>
           </el-select>
-        </el-form-item>
-        <el-form-item label="系统版本" required >
-        <el-input type="text" v-model="tempScriptConfig.systemVersion" >
-          </el-input>
         </el-form-item>
         
       </el-form>

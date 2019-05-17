@@ -13,15 +13,15 @@
     </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row>
-      <el-table-column align="center" label="序号" prop="id" width="40">
+              highlight-current-row height="530">
+      <el-table-column align="center" label="序号" prop="id" width="40" fixed="left">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-        <el-table-column align="center" label="服务器"       prop="host" width="135"></el-table-column>
+        <el-table-column align="center" label="服务器"       prop="host" width="135" sortable></el-table-column>
         <!-- <el-table-column align="center" label="实例名"       prop="serviceName" width="135"></el-table-column> -->
-        <el-table-column align="center" label="应用服务器"   prop="applicationServer" width="135"></el-table-column>
+        <el-table-column align="center" label="应用服务器"   prop="applicationServer" width="135" sortable></el-table-column>
         <el-table-column align="center" label="用户名"       prop="userName" width="80"></el-table-column>
         <el-table-column align="center" label="DB 用户名"    prop="dbUsername" width="100"></el-table-column>
         <el-table-column align="center" label="适用版本"     prop="sysVersion"></el-table-column>

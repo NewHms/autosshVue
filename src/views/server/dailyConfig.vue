@@ -4,7 +4,7 @@
       <el-form>
  
         <el-form-item>
-          <el-input v-model="listQuery.type" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
+          <el-input v-model="listQuery.dailyDesc" placeholder="请输入监控描述" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
@@ -12,15 +12,15 @@
     </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row>
-      <el-table-column align="center" label="序号"     prop="id" width="40">
+              highlight-current-row height="530">
+      <el-table-column align="center" label="序号"     prop="id" width="40" fixed="left">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="code"             prop="code"></el-table-column>
+      <el-table-column align="center" label="code"             prop="code" sortable></el-table-column>
       <el-table-column align="center" label="监控项"            prop="dailyDesc"></el-table-column>
-      <el-table-column align="center" label="WARING 阀值"      prop="waring"></el-table-column>
+      <el-table-column align="center" label="WARNING 阀值"      prop="warning"></el-table-column>
       <el-table-column align="center" label="CRITICAL 阀值"     prop="critical"></el-table-column>
       <el-table-column align="center" label="判断规则"          prop="dailyRule" width="100"></el-table-column>
       <el-table-column align="center" label="编辑"           width="100" v-if="hasPerm('scriptConfig:update')">
@@ -49,16 +49,16 @@
           <el-input type="text" v-model="tempScriptConfig.dailyDesc" disabled="true">
           </el-input>
         </el-form-item>
-        <el-form-item label="WARING 阀值" required label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.waring">
+        <el-form-item label="WARNING 阀值" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.warning">
           </el-input>
         </el-form-item>
         <el-form-item label="CRITICAL 阀值" required label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.critical">
           </el-input>
         </el-form-item>
-        <el-form-item label="判断规则" required label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.dailyRule">
+        <el-form-item label="判断规则"  required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyRule" placeholder="0->等式;1->不等式">
           </el-input>
         </el-form-item>
       </el-form>  
@@ -96,7 +96,7 @@
         tempScriptConfig: {
           dailyDesc    : '',
           code         : '',
-          waring       : '',
+          warning       : '',
           critical     : '',
           dailyRule    : ''
         },
@@ -105,8 +105,8 @@
     
     },
     created() {
-      this.getList();
       this.getOneList();
+      this.getList();
     },
     computed: {
       ...mapGetters([
@@ -116,7 +116,7 @@
     methods: {
       
       getList() {
-
+        debugger
         //查询列表
         this.listLoading = true;
         this.api({
@@ -168,7 +168,7 @@
         let shellOne                     = this.listOne[0];
         if (shellOne != undefined){
           //显示新增对话框
-          this.tempScriptConfig.waring       = "";
+          this.tempScriptConfig.warning      = "";
           this.tempScriptConfig.code         = shellOne.code;
           this.tempScriptConfig.dailyDesc    = shellOne.dailyDesc;
           this.tempScriptConfig.critical     = "";
@@ -178,7 +178,7 @@
         }
         else{
           //显示新增对话框
-          this.tempScriptConfig.waring       = "";
+          this.tempScriptConfig.warning      = "";
           this.tempScriptConfig.code         = "";
           this.tempScriptConfig.dailyDesc    = "";
           this.tempScriptConfig.critical     = "";
@@ -191,7 +191,7 @@
       showUpdate($index) {
         debugger
         let shell = this.list[$index];
-        this.tempScriptConfig.waring       = shell.waring;
+        this.tempScriptConfig.warning      = shell.warning;
         this.tempScriptConfig.code         = shell.code;
         this.tempScriptConfig.critical     = shell.critical;
         this.tempScriptConfig.dailyDesc    = shell.dailyDesc;

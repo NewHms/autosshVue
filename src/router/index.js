@@ -97,9 +97,9 @@ export const asyncRouterMap = [
 
       {
         path: 'daily_config', 
-        name: '固定阀值配置', 
+        name: '通用阀值配置', 
         component: _import('server/dailyConfig'), 
-        meta: {title: '固定阀值配置', icon: 'tree'}, 
+        meta: {title: '通用阀值配置', icon: 'tree'}, 
         menu: 'daily_config'
       },
       {

@@ -21,19 +21,19 @@
   </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row :row-style="checkDel">
+              highlight-current-row :row-style="checkDel" height="530">
       <!-- <span v-if="scope.row.execStatus=2" style="color:red">{{ scope.row.execStatus }}</span>         -->
-      <el-table-column align="center" width="40"     label="序号"       prop="id" >
+      <el-table-column align="center" width="40"     label="序号"       prop="id" fixed="left">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" width="130"    label="IP"         prop="ip" ></el-table-column>
+      <el-table-column align="center" width="130"    label="IP"         prop="ip" sortable></el-table-column>
       <el-table-column align="center" width="100"    label="用户名"      prop="USER" ></el-table-column>
       <el-table-column align="center"                label="命令描述"    prop="shellDesc"  :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
       <el-table-column align="center" width="450"    label="执行结果"    prop="execResult" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-      <el-table-column align="center" width="90"     label="执行状态"    prop="resultStatus" :cell-class-name="checkDel"></el-table-column>
-      <el-table-column align="center" width="100"    label="执行时间"    prop="execTime"></el-table-column>
+      <el-table-column align="center" width="110"    label="执行状态"    prop="resultStatus" :cell-class-name="checkDel"  sortable></el-table-column>
+      <el-table-column align="center" width="110"    label="执行时间"    prop="execTime" sortable></el-table-column>
       <el-table-column align="center" width="80"     label="执行次数"    prop="execNum"></el-table-column>
       <!-- <el-table-column align="center" width="70"  v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
@@ -82,7 +82,7 @@
         listQuery_warning: {
            pageNum: 1,//页码
            pageRow: 50,//每页条数,
-           resultStatus : 'WARNING',
+           resultStatus : '1',
           //execStatus : '',
         },
         listQuery_success: {
@@ -147,7 +147,7 @@
         if (this.list[rowIndex].resultStatus=='FAIL'){
           return 'color: #FF0000;font-weight: 500;'
         }
-        if (this.list[rowIndex].resultStatus=='WARNING'){
+        if (this.list[rowIndex].resultStatus=='WARING' || this.list[rowIndex].resultStatus=='CRITICAL' ){
           return 'color: #FFC125;font-weight: 500;'
         }
         if (this.list[rowIndex].resultStatus=='SUCCESS'){
