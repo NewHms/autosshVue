@@ -24,6 +24,8 @@
         <el-table-column align="center" label="应用服务器"   prop="applicationServer" width="135" sortable></el-table-column>
         <el-table-column align="center" label="用户名"       prop="userName" width="80"></el-table-column>
         <el-table-column align="center" label="DB 用户名"    prop="dbUsername" width="100"></el-table-column>
+        <el-table-column align="center" label="备份路径"     prop="backupUrl" width="100"></el-table-column>
+        <!-- <el-table-column align="center" label="备份个数"     prop="backupNum" width="50"></el-table-column> -->
         <el-table-column align="center" label="适用版本"     prop="sysVersion"></el-table-column>
         <el-table-column align="center" label="任务名称"     prop="subject"></el-table-column>
         <el-table-column align="center" label="服务器类型"   prop="systemType"></el-table-column>
@@ -84,6 +86,14 @@
         </el-form-item>
         <el-form-item label="DB 密码"  required label-width="100px">
           <el-input type="password" v-model="tempScriptConfig.dbPassword">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="备份路径"  required label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.backupUrl">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="备份个数"  required label-width="100px">
+          <el-input type="text" v-model="tempScriptConfig.backupNum">
           </el-input>
         </el-form-item>
         <el-form-item label="适用版本" required label-width="100px">
@@ -200,7 +210,8 @@
           execTime           : '',
           password           : '',
           dbPassword         : '',
-          labelPosition      : 'right'
+          backupUrl          : '',
+          backupNum          : ''
         },
         
       }
@@ -342,6 +353,8 @@
             this.tempScriptConfig.password              = "";
             this.tempScriptConfig.dbUsername            = "";
             this.tempScriptConfig.dbPassword            = "";
+            this.tempScriptConfig.backupUrl             = "";
+            this.tempScriptConfig.backupNum             = "";
             this.tempScriptConfig.subject               = "";
             this.tempScriptConfig.systemType            = shellOne.systemType;
             this.tempScriptConfig.crontab               = "";
@@ -360,6 +373,8 @@
             this.tempScriptConfig.password              = "";
             this.tempScriptConfig.dbUsername            = "";
             this.tempScriptConfig.dbPassword            = "";
+            this.tempScriptConfig.backupUrl             = "";
+            this.tempScriptConfig.backupNum             = "";
             this.tempScriptConfig.subject               = "";
             this.tempScriptConfig.systemType            = "";
             this.tempScriptConfig.crontab               = "";
@@ -393,6 +408,8 @@
         this.tempScriptConfig.password              = shell.password;
         this.tempScriptConfig.dbUsername            = shell.dbUsername;
         this.tempScriptConfig.dbPassword            = shell.dbPassword;
+        this.tempScriptConfig.backupUrl             = shell.backupUrl;
+        this.tempScriptConfig.backupNum             = shell.backupNum;
         this.tempScriptConfig.subject               = shell.subject;
         this.tempScriptConfig.systemType            = shell.systemType;
         this.tempScriptConfig.crontab               = shell.crontab;

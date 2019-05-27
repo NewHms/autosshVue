@@ -9,6 +9,7 @@
           <el-button type="danger"  prefix-icon="el-icon-search" @click="getList_fail">失败</el-button>
           <el-button type="warning" prefix-icon="el-icon-search" @click="getList_warning">告警</el-button>
           <el-button type="success" prefix-icon="el-icon-search" @click="getList_success">正常</el-button>
+          <el-button :loading="downloadLoading" style="margin:0 0 20px 20px;float:right" type="primary" icon="document" prefix-icon="el-icon-search" @click="dailyLogToExecl">导出EXECL</el-button>
           <el-date-picker
              v-model="listQuery.dataTime"
              style="float:right"
@@ -76,7 +77,7 @@
         listQuery_fail: {
            pageNum: 1,//页码
            pageRow: 50,//每页条数,
-           resultStatus : 'FAIL',
+           resultStatus : '0',
           //execStatus : '',
         },
         listQuery_warning: {
@@ -88,7 +89,12 @@
         listQuery_success: {
            pageNum: 1,//页码
            pageRow: 50,//每页条数,
-           resultStatus : 'SUCCESS',
+           resultStatus : '2',
+          //execStatus : '',
+        },
+        listQuery_execl: {
+           pageNum: 1,//页码
+           pageRow: 50,//每页条数,
           //execStatus : '',
         },
         // sysVersion1: [{
@@ -148,7 +154,7 @@
           return 'color: #FF0000;font-weight: 500;'
         }
         if (this.list[rowIndex].resultStatus=='WARING' || this.list[rowIndex].resultStatus=='CRITICAL' ){
-          return 'color: #FFC125;font-weight: 500;'
+          return 'color: #CD6600;font-weight: 500;'
         }
         if (this.list[rowIndex].resultStatus=='SUCCESS'){
           return 'color: #008000;font-weight: 500;'
@@ -215,6 +221,21 @@
           this.listLoading = false;
           this.list = data.list;
           this.totalCount = data.totalCount;
+        })
+      },
+      dailyLogToExecl() {
+        debugger
+        //刷新定时器
+        let _vue = this;
+        this.listLoading = false;
+        this.listQuery_execl.dataTime =  this.listQuery.dataTime
+        this.api({
+          url: "/logConfig/dailyLogToExecl",
+          method: "get",
+          params: this.listQuery_execl
+        }).catch(() => {
+            _vue.$message.success("导出成功")
+            _vue.getList()
         })
       },
       handleSizeChange(val) {

@@ -21,7 +21,7 @@
       <el-table-column align="center" label="TYPE"          prop="type" width="80"></el-table-column>
       <el-table-column align="center" label="监控项"         prop="dailyDesc"></el-table-column>
       <el-table-column align="center" label="通用阀值">
-        <el-table-column align="center" label="WARNING"   prop="wanring"   width="100"></el-table-column>
+        <el-table-column align="center" label="WARNING"   prop="warning"   width="100"></el-table-column>
         <el-table-column align="center" label="CRITICAL"  prop="critical" width="100"></el-table-column>
       </el-table-column>
       <el-table-column align="center" label="私有阀值">
@@ -57,7 +57,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="WARNING" required  label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.waring" disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.warning" disabled="true">
           </el-input>
         </el-form-item>
         <el-form-item label="CRITICAL" required   label-width="145px">
@@ -65,7 +65,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="WARNING_PRIV" required label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.waringPriv">
+          <el-input type="text" v-model="tempScriptConfig.warningPriv">
           </el-input>
         </el-form-item>
         <el-form-item label="CRITICAL_PRIV" required label-width="145px">
