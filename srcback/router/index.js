@@ -75,25 +75,70 @@ export const asyncRouterMap = [
     children: [  
       {
         path: '', 
-        name: ' 检查脚本配置', 
-        component: _import('server/scriptConfig'), 
-        meta: {title: '检查脚本配置', icon: 'tree'}, 
-        menu: 'sh_setting'
+        name: ' 日检配置', 
+        component: _import('server/indexConfig'), 
+        meta: {title: '日检配置', icon: 'tree'}, 
+        menu: 'server'
       },
       {
         path: 'sh_setting', 
-        name: '服务器配置', 
-        component: _import('server/indexConfig'), 
-        meta: {title: '服务器配置', icon: 'tree'}, 
-        menu: 'server'
-      }, 
+        name: ' 日检脚本配置', 
+        component: _import('server/scriptConfig'), 
+        meta: {title: '日检脚本配置', icon: 'tree'}, 
+        menu: 'sh_setting'
+      },
       {
-        path: 'job_runnning', 
-        name: 'job运行信息', 
-        component: _import('server/quartzJobExecTime'), 
-        meta: {title: 'job运行信息', icon: 'tree'}, 
-        menu: 'job_runnning'
-      }, 
+        path: 'sh_portion', 
+        name: ' 日检服务器配置', 
+        component: _import('server/portionConfig'), 
+        meta: {title: '日检服务器配置', icon: 'tree'}, 
+        menu: 'sh_portion'
+      },
+
+      {
+        path: 'daily_config', 
+        name: '通用阀值配置', 
+        component: _import('server/dailyConfig'), 
+        meta: {title: '通用阀值配置', icon: 'tree'}, 
+        menu: 'daily_config'
+      },
+      {
+        path: 'daily_config_priv', 
+        name: '私有阀值配置', 
+        component: _import('server/dailyConfigPriv'), 
+        meta: {title: '私有阀值配置', icon: 'tree'}, 
+        menu: 'daily_config_priv'
+      },
+      {
+        path: 'daily_re_config', 
+        name: '正则表达式配置', 
+        component: _import('server/dailyReConfig'), 
+        meta: {title: '正则表达式配置', icon: 'tree'}, 
+        menu: 'daily_re_config'
+      },
+      // {
+      //   path: '/daily',
+      //   name: '',
+      //   meta: {title: '资源配置', icon: 'tree'}, 
+      //   //component: Layout, 
+      //   menu: 'daily',
+      //   children:[
+      //     {
+      //       path: 'daily_config',
+      //       name: '通用阀值配置',
+      //       meta: {title: '通用阀值配置', icon: 'tree'}, 
+      //       component: _import('server/test/dailyConfig').default, 
+      //       menu: 'daily_config',
+      //     },
+      //     {
+      //       path: 'daily_config_priv', 
+      //       name: '私有阀值配置', 
+      //       component: _import('server/test/dailyConfigPriv'), 
+      //       meta: {title: '私有阀值配置', icon: 'tree'}, 
+      //       menu: 'daily_config_priv'
+      //     },
+      //   ]
+      // },   
       {
         path: 'daily_log', 
         name: ' 日志', 

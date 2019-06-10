@@ -4,7 +4,7 @@
       <el-form>
  
         <el-form-item>
-          <el-input v-model="listQuery.dailyDesc" placeholder="请输入监控描述" style='width: 300px;' type="text" clearable></el-input>
+          <el-input v-model="listQuery.dailyReDesc" placeholder="请输入正则描述" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item>
@@ -18,14 +18,17 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column align="center" label="code"             prop="code" sortable></el-table-column>
-      <el-table-column align="center" label="监控项"            prop="dailyDesc"></el-table-column>
-      <el-table-column align="center" label="WARNING 阀值"      prop="warning"></el-table-column>
-      <el-table-column align="center" label="CRITICAL 阀值"     prop="critical"></el-table-column>
-      <el-table-column align="center" label="判断规则"          prop="dailyRule" width="100"></el-table-column>
-      <el-table-column align="center" label="编辑"           width="100" v-if="hasPerm('scriptConfig:update')">
+      <el-table-column align="center" label="code"             prop="dailyReCode" width="95" sortable></el-table-column>
+      <el-table-column align="center" label="正则表达式"        prop="dailyRe" width="320"></el-table-column>
+      <el-table-column align="center" label="正则描述"          prop="dailyReDesc" width="400"></el-table-column>
+      <el-table-column align="center" label="循环处理"      prop="isLoop" width="80"></el-table-column>
+      <el-table-column align="center" label="计算处理"      prop="isCalc" width="80"></el-table-column>
+      <el-table-column align="center" label="编辑"           width="200" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
+          <el-button type="danger" icon="delete" 
+                     @click="removeUser(scope.$index)">删除
+          </el-button>           
         </template>
       </el-table-column>
     </el-table>
@@ -42,23 +45,23 @@
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 350px; margin-left:50px;'>
         <el-form-item label="code"  required label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.code" disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.dailyReCode">
           </el-input>
         </el-form-item>
-        <el-form-item label="监控项"  required label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.dailyDesc" disabled="true">
+        <el-form-item label="正则表达式"  required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyRe" >
           </el-input>
         </el-form-item>
-        <el-form-item label="WARNING 阀值" required label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.warning">
+        <el-form-item label="正则描述" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyReDesc">
           </el-input>
         </el-form-item>
-        <el-form-item label="CRITICAL 阀值" required label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.critical">
+        <el-form-item label="是否循环处理" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.isLoop">
           </el-input>
         </el-form-item>
-        <el-form-item label="判断规则"  required label-width="145px">
-          <el-input type="text" v-model="tempScriptConfig.dailyRule" placeholder="0->等式;1->不等式">
+        <el-form-item label="是否计算处理" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.isCalc">
           </el-input>
         </el-form-item>
       </el-form>  
@@ -94,18 +97,17 @@
           create: '新增配置'
         },
         tempScriptConfig: {
-          dailyDesc    : '',
-          code         : '',
-          warning       : '',
-          critical     : '',
-          dailyRule    : ''
+          dailyRe      : '',
+          dailyReCode  : '',
+          dailyReDesc  : '',
+          isLoop       : '',
+          isCalc       : ''
         },
         
       }
     
     },
     created() {
-      this.getOneList();
       this.getList();
     },
     computed: {
@@ -121,26 +123,12 @@
         this.listLoading = true;
         this.api({
           
-          url: "/dailyConfig/listDistConfig",
+          url: "/dailyReConfig/listDailyRe",
           method: "get",
           params: this.listQuery
         }).then(data => {
           this.listLoading = false;
           this.list = data.list;
-          this.totalCount = data.totalCount;
-        })
-      },
-      getOneList() {
-        //查询列表
-        this.listLoading = true;
-        this.api({
-          
-          url: "/dailyConfig/listConfigOne",
-          method: "get",
-          params: this.listQuery
-        }).then(data => {
-          this.listLoading = false;
-          this.listOne = data.list;
           this.totalCount = data.totalCount;
         })
       },
@@ -165,37 +153,23 @@
       },
       showCreate() {
         debugger
-        let shellOne                     = this.listOne[0];
-        if (shellOne != undefined){
-          //显示新增对话框
-          this.tempScriptConfig.warning      = "";
-          this.tempScriptConfig.code         = shellOne.code;
-          this.tempScriptConfig.dailyDesc    = shellOne.dailyDesc;
-          this.tempScriptConfig.critical     = "";
-          this.tempScriptConfig.dailyRule    = "",
-          this.dialogStatus = "create"
-          this.dialogFormVisible = true
-        }
-        else{
-          //显示新增对话框
-          this.tempScriptConfig.warning      = "";
-          this.tempScriptConfig.code         = "";
-          this.tempScriptConfig.dailyDesc    = "";
-          this.tempScriptConfig.critical     = "";
-          this.tempScriptConfig.dailyRule    = "",
-          this.dialogStatus = "create"
-          this.dialogFormVisible = true
-        }
-        
+        //显示新增对话框
+        this.tempScriptConfig.dailyRe      = "";
+        this.tempScriptConfig.dailyReDesc  = "";
+        this.tempScriptConfig.dailyReCode  = "";
+        this.tempScriptConfig.isLoop       = "";
+        this.tempScriptConfig.isCalc       = "";
+        this.dialogStatus = "create"
+        this.dialogFormVisible = true
       },
       showUpdate($index) {
         debugger
         let shell = this.list[$index];
-        this.tempScriptConfig.warning      = shell.warning;
-        this.tempScriptConfig.code         = shell.code;
-        this.tempScriptConfig.critical     = shell.critical;
-        this.tempScriptConfig.dailyDesc    = shell.dailyDesc;
-        this.tempScriptConfig.dailyRule    = shell.dailyRule,
+        this.tempScriptConfig.dailyRe      = shell.dailyRe;
+        this.tempScriptConfig.dailyReDesc  = shell.dailyReDesc;
+        this.tempScriptConfig.dailyReCode  = shell.dailyReCode;
+        this.tempScriptConfig.isLoop       = shell.isLoop;
+        this.tempScriptConfig.isCalc       = shell.isCalc;
         this.tempScriptConfig.id           = shell.id;
         this.dialogStatus                  = "update"
         this.dialogFormVisible             = true
@@ -205,13 +179,12 @@
         let _vue = this;
         //添加新配置
         this.api({
-          url: "/dailyConfig/addConfig",
+          url: "/dailyReConfig/addDailyRe",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
           _vue.$message.success("新增成功")
           this.getList();
-          this.getOneList();
           this.dialogFormVisible = false
         })
       },
@@ -220,7 +193,7 @@
         let _vue = this;
         debugger
         this.api({
-          url: "/dailyConfig/updateCodeConfig",
+          url: "/dailyReConfig/updateDailyRe",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
@@ -235,8 +208,29 @@
             duration: 1 * 1000,
             onClose: () => {
               _vue.getList();
-              _vue.getOneList();
             }
+          })
+        })
+      },
+      removeUser($index) {
+        let _vue = this;
+        this.$confirm('确定删除此命令?', '提示', {
+          confirmButtonText: '确定',
+          showCancelButton: false,
+          type: 'warning'
+        }).then(() => {
+          let script = _vue.list[$index];
+          //user.deleteStatus = '2';
+          this.tempScriptConfig.id = script.id;
+          _vue.api({
+            url: "/dailyReConfig/deleteDailyRe",
+            method: "post",
+            data: this.tempScriptConfig
+          }).then(() => {
+            _vue.$message.success("删除成功")
+            _vue.getList()
+          }).catch(() => {
+            _vue.$message.error("删除失败")
           })
         })
       },

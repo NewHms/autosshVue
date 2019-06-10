@@ -18,15 +18,27 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>        
-      <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu" sortable></el-table-column>
-      <el-table-column align="center" label="命令描述" prop="shellDesc"></el-table-column>
+      <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+      <el-table-column align="center" label="命令描述" width = '200' prop="shellDesc"></el-table-column>
+      <el-table-column align="center" label="命令类型" prop="type"></el-table-column>
       <el-table-column align="center" label="适用系统" prop="systemType"></el-table-column>
-      <el-table-column align="center" label="创建时间" prop="createTime"></el-table-column>
-      <el-table-column align="center" label="编辑" width="220" v-if="hasPerm('scriptConfig:update')">
+      <el-table-column align="center" label="适配正则" prop="shellUseRe"></el-table-column>
+      <el-table-column align="center" label="判断规则" prop="dailyRule"></el-table-column>
+      <el-table-column align="center" label="SUCCESS" prop="dailySuccess" width = '90'></el-table-column>
+      <el-table-column align="center" label="日检阀值">
+        <el-table-column align="center" label="WAR" prop="dailyWarning"></el-table-column>
+        <el-table-column align="center" label="CRI" prop="dailyCritical"></el-table-column>
+      </el-table-column>
+      <el-table-column align="center" label="监控阀值">
+        <el-table-column align="center" label="WAR" prop="monitorWarning"></el-table-column>
+        <el-table-column align="center" label="CRI" prop="monitorCritical"></el-table-column>
+      </el-table-column>
+      <el-table-column align="center" label="执行时间" prop="execTime"></el-table-column>
+      <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
-          <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
-          <el-button type="danger" icon="delete" 
-                     @click="removeUser(scope.$index)">删除
+          <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
+          <el-button type="text" icon="el-icon-delete" 
+                     @click="removeUser(scope.$index)">
           </el-button>
         </template>
       </el-table-column>
@@ -43,25 +55,29 @@
     </el-pagination>
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
-               style='width: 300px; margin-left:50px;'>
-        <el-form-item label="当前编号" required >
+               style='width: 400px; margin-left:50px;'>
+        <el-form-item label="当前编号" required label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.maxCode"  :disabled="true"> 
           </el-input>
         </el-form-item>          
-        <el-form-item label="命令编号" required >
+        <el-form-item label="命令编号" required label-width="145px">
           <el-input type="text" v-model="tempScriptConfig.code"  placeholder="请输入10的倍数" > 
           </el-input>
-        </el-form-item>       
-        <el-form-item label="命令" required >
-          <el-input type="text" v-model="tempScriptConfig.shellName">
+        </el-form-item>
+        <el-form-item label="命令" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.shellName"> 
           </el-input>
         </el-form-item>
-        <el-form-item label="命令描述"  required>
-          <el-input type="text" v-model="tempScriptConfig.shellDesc">
+        <el-form-item label="命令描述" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.shellDesc"> 
           </el-input>
         </el-form-item>
-        <el-form-item label="适用系统" required>
-          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" style='width: 220px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+        <el-form-item label="命令类型" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.type"> 
+          </el-input>
+        </el-form-item>
+        <el-form-item label="适用系统" required label-width="145px">
+          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" style='width: 255px;'> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in alltype"
               :key="item.serverId"
@@ -70,7 +86,45 @@
             </el-option>
           </el-select>
         </el-form-item>
-        
+        <el-form-item label="适配正则" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.shellUseRe"> 
+          </el-input>
+        </el-form-item>
+        <el-form-item label="判断规则" required label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyRule" placeholder="0->等式;1->不等式"> 
+          </el-input>
+        </el-form-item>       
+        <el-form-item label="SUCCESS 阀值"  label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailySuccess">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="日检 WARNING 阀值" label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyWarning">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="日检 CRITICAL 阀值" label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.dailyCritical">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="监控 WARNING 阀值" label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.monitorWarning">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="监控 CRITICAL 阀值" label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.monitorCritical">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="超时时间(s)" label-width="145px">
+          <el-input type="text" v-model="tempScriptConfig.timeOut">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="执行时间" required label-width="145px" >
+          <el-input v-model="tempScriptConfig.execTime">                                                  
+            <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
+            <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
+          </el-input>
+        </el-form-item>
+        <cron v-if="showCronBox" v-model="tempScriptConfig.execTime"  style="width:640px;color:#2c3e50;margin-left:-35px;"></cron>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
@@ -84,11 +138,14 @@
 </template>
 <script>
   import {mapGetters} from 'vuex'
-  
-
+   import cron from './cron'
   export default {
+    components: {
+      cron
+    },
     data() {
       return {
+        showCronBox: false,
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
         listLoading: false,//数据加载等待动画
@@ -97,7 +154,8 @@
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
-        alltype: [],
+        alltype  : [],
+        allValue : [],
         // sysVersion: [{
         //   value:'0',
         //   lable:'MySQL'
@@ -117,15 +175,24 @@
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
-          update: '编辑',
-          create: '新建用户'
+          update: '编辑配置',
+          create: '新建配置'
         },
         tempScriptConfig: {
-          code          : '',
-          shellName     : '',
-          shellDesc     : '',
-          systemType    : '',
-          systemVersion : ''
+          type            : '',  
+          shellName       : '',
+          shellDesc       : '',  
+          code            : '',
+          dailyRule       : '',  
+          shellUseRe      : '',
+          dailySuccess    : '',  
+          dailyWarning    : '',
+          dailyCritical   : '',  
+          monitorWarning  : '', 
+          monitorCritical : '',  
+          execTime        : '',
+          timeOut         : '',
+          systemType      : ''
         },
         
       }
@@ -144,6 +211,7 @@
     },
     methods: {
       getAllServerType() {
+        debugger
         this.api({
           url: "/scriptConfig/getAllServerType",
           method: "get"
@@ -187,27 +255,45 @@
       showCreate() {
         //显示新增对话框
         let shell = this.list[1];
-        this.tempScriptConfig.code          = "";
-        this.tempScriptConfig.maxCode       = shell.maxCode;;
-        this.tempScriptConfig.shellName     = "";
-        this.tempScriptConfig.shellDesc     = "";
-        this.tempScriptConfig.systemType    = "";
-        this.tempScriptConfig.systemVersion = "";
+        this.tempScriptConfig.type            =  "";  
+        this.tempScriptConfig.shellName       =  "";
+        this.tempScriptConfig.shellDesc       =  "";  
+        this.tempScriptConfig.code            =  "";
+        this.tempScriptConfig.dailyRule       =  "";  
+        this.tempScriptConfig.shellUseRe      =  "";
+        this.tempScriptConfig.dailySuccess    =  "";  
+        this.tempScriptConfig.dailyWarning    =  "";
+        this.tempScriptConfig.dailyCritical   =  "";  
+        this.tempScriptConfig.monitorWarning  =  ""; 
+        this.tempScriptConfig.monitorCritical =  "";  
+        this.tempScriptConfig.execTime        =  "";
+        this.tempScriptConfig.timeOut         =  "";
+        this.tempScriptConfig.systemType      =  "";  
+        this.tempScriptConfig.maxCode         = shell.maxCode;;
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       },
       showUpdate($index) {
+        debugger
         let shell = this.list[$index];
-        this.tempScriptConfig.code          = shell.code;
-        this.tempScriptConfig.maxCode       = shell.maxCode;
-        this.tempScriptConfig.shellName     = shell.shellName;
-        this.tempScriptConfig.shellDesc     = shell.shellDesc;
-        this.tempScriptConfig.systemType    = shell.systemType;
-        this.tempScriptConfig.systemVersion = shell.systemVersion;
-        this.tempScriptConfig.deleteStatus  = '1';
-        this.tempScriptConfig.id            = shell.id;
-        this.dialogStatus                   = "update"
-        this.dialogFormVisible              = true
+        this.tempScriptConfig.type            =  shell.type;  
+        this.tempScriptConfig.shellName       =  shell.shellName;
+        this.tempScriptConfig.shellDesc       =  shell.shellDesc; 
+        this.tempScriptConfig.code            =  shell.code;
+        this.tempScriptConfig.dailyRule       =  shell.dailyRule;
+        this.tempScriptConfig.shellUseRe      =  shell.shellUseRe;
+        this.tempScriptConfig.dailySuccess    =  shell.dailySuccess;
+        this.tempScriptConfig.dailyWarning    =  shell.dailyWarning;
+        this.tempScriptConfig.dailyCritical   =  shell.dailyCritical;  
+        this.tempScriptConfig.monitorWarning  =  shell.monitorWarning; 
+        this.tempScriptConfig.monitorCritical =  shell.monitorCritical;  
+        this.tempScriptConfig.execTime        =  shell.execTime;
+        this.tempScriptConfig.timeOut         =  shell.timeOut;
+        this.tempScriptConfig.systemType      =  shell.systemType;
+        this.tempScriptConfig.deleteStatus    = '1';
+        this.tempScriptConfig.id              = shell.id;
+        this.dialogStatus                     = "update"
+        this.dialogFormVisible                = true
       },
       createScript() {
         let _vue = this;

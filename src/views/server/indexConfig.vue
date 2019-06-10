@@ -19,26 +19,50 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-        <el-table-column align="center" label="服务器"       prop="host" width="135" sortable></el-table-column>
+        <el-table-column align="center" label="服务器"       prop="host" width="130" sortable></el-table-column>
         <!-- <el-table-column align="center" label="实例名"       prop="serviceName" width="135"></el-table-column> -->
-        <el-table-column align="center" label="应用服务器"   prop="applicationServer" width="135" sortable></el-table-column>
-        <el-table-column align="center" label="用户名"       prop="userName" width="80"></el-table-column>
-        <el-table-column align="center" label="DB 用户名"    prop="dbUsername" width="100"></el-table-column>
-        <el-table-column align="center" label="备份路径"     prop="backupUrl" width="100"></el-table-column>
+        <!-- <el-table-column align="center" label="监控服务器"   prop="applicationServer" width="135" sortable></el-table-column> -->
+        <el-table-column align="center"   label="用户名"  width="60">
+          <el-table-column align="center" label="OS"    prop="userName" width="70"></el-table-column>
+          <el-table-column align="center" label="DB"    prop="dbUsername" width="70"></el-table-column>
+        </el-table-column>
+        <el-table-column align="center"   label="备份配置"  width="100">
+          <el-table-column align="center" label="路径"     prop="backupUrl" width="100"></el-table-column>
+          <el-table-column align="center" label="个数"     prop="backupNum" width="50"></el-table-column>
+        </el-table-column>
         <!-- <el-table-column align="center" label="备份个数"     prop="backupNum" width="50"></el-table-column> -->
-        <el-table-column align="center" label="适用版本"     prop="sysVersion"></el-table-column>
-        <el-table-column align="center" label="任务名称"     prop="subject"></el-table-column>
-        <el-table-column align="center" label="服务器类型"   prop="systemType"></el-table-column>
-        <el-table-column align="center" label="是否自动启动"  prop="crontab" :formatter = "stateFormat" ></el-table-column>
-        <!-- el-table-column align="center" label="创建时间"     prop="createTime"></el-table-column> -->
+        <el-table-column align="center"   label="服务器类型"     prop="systemType" width="70"></el-table-column>
+        <el-table-column align="center"   label="命令"     prop="shellName" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+        <el-table-column align="center"   label="命令描述"   prop="shellDesc"  width="70" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+        <el-table-column align="center"   label="适用版本"     prop="systemVersion" width="75"></el-table-column>
+        <el-table-column align="center"   label="通用阀值">
+          <el-table-column align="center" label="日检阀值">
+            <el-table-column align="center" label="WAR" prop="dailyWarning"  width="60"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="dailyCritical" width="50"></el-table-column>
+          </el-table-column>
+          <el-table-column align="center"   label="监控阀值">
+            <el-table-column align="center" label="WAR" prop="monitorWarning"  width="60"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="monitorCritical" width="50"></el-table-column>
+          </el-table-column>
+        </el-table-column>
+        <el-table-column align="center"     label="私有阀值">
+          <el-table-column align="center"   label="日检阀值">
+            <el-table-column align="center" label="WAR" prop="dailyWarningPriv"  width="60"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="dailyCriticalPriv" width="50"></el-table-column>
+          </el-table-column>
+          <el-table-column align="center"   label="监控阀值">
+            <el-table-column align="center" label="WAR" prop="monitorWarningPriv"  width="60"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="monitorCriticalPriv" width="50"></el-table-column>
+          </el-table-column>
+        </el-table-column>
         <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
-        <el-table-column align="center" label="编辑"         width="200" v-if="hasPerm('scriptConfig:update')">
-        <template slot-scope="scope">
-          <el-button type="primary" icon="edit" @click="showUpdate(scope.$index)">修改</el-button>
-          <el-button type="danger" icon="delete" 
-                     @click="removeUser(scope.$index)">删除
-          </el-button>
-        </template>
+        <el-table-column align="center" label="编辑"         width="70" v-if="hasPerm('scriptConfig:update')" fixed="right">
+          <template slot-scope="scope">
+            <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
+            <el-button type="text" icon="el-icon-delete" 
+                     @click="removeUser(scope.$index)">
+            </el-button>
+          </template>
       </el-table-column>
     </el-table>
    
@@ -54,50 +78,53 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
-               style='width: 300px; margin-left:50px;' label="right">
+               style='width: 350px; margin-left:50px;' label="right">
                <!--label-width="100px" 设置长度 -->
-        <el-form-item label="服务器"  required  label-width="100px">
+        <el-form-item label="服务器"  required  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.host">
           </el-input>
         </el-form-item>
-        <el-form-item label="实例名"    label-width="100px">
-          <el-input type="text" v-model="tempScriptConfig.serviceName">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="端口"  required  label-width="100px">
-          <el-input type="text" v-model="tempScriptConfig.post">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="应用服务器"  required  label-width="100px">
+        <el-form-item label="监控服务器"  required  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.applicationServer">
           </el-input>
         </el-form-item>
-        <el-form-item label="用户名"  required label-width="100px">
+        <el-form-item label="实例名"  label-width="120px">
+          <el-input type="text" v-model="tempScriptConfig.serviceName">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="端口"  required  label-width="120px">
+          <el-input type="text" v-model="tempScriptConfig.post">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="OS用户"  required  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.userName">
           </el-input>
         </el-form-item>
-        <el-form-item label="密码"  required label-width="100px">
+        <el-form-item label="OS密码"  required  label-width="120px">
           <el-input type="password" v-model="tempScriptConfig.password">
           </el-input>
         </el-form-item>
-        <el-form-item label="DB 用户名"  required label-width="100px">
+        <el-form-item label="DB用户"  required  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.dbUsername">
           </el-input>
         </el-form-item>
-        <el-form-item label="DB 密码"  required label-width="100px">
+        <el-form-item label="DB密码"  required  label-width="120px">
           <el-input type="password" v-model="tempScriptConfig.dbPassword">
           </el-input>
         </el-form-item>
-        <el-form-item label="备份路径"  required label-width="100px">
+        <el-form-item label="备份路径"  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.backupUrl">
           </el-input>
         </el-form-item>
-        <el-form-item label="备份个数"  required label-width="100px">
+        <el-form-item label="备份个数"  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.backupNum">
           </el-input>
         </el-form-item>
-        <el-form-item label="适用版本" required label-width="100px">
-          <el-select v-model="tempScriptConfig.sysVersion" disabled multiple placeholder="" label-width="80px" style='width: 200px;'> 
+        <el-form-item label="服务器类型"  required  label-width="120px">
+          <el-input type="text" v-model="tempScriptConfig.systemType" ></el-input>
+        </el-form-item>
+        <el-form-item label="适用版本" required label-width="120px">
+          <el-select v-model="tempScriptConfig.systemVersion"  multiple placeholder="请选择" label-width="80px" style='width: 230px;'> 
             <el-option
               v-for="item in alltype"
               :key="item.serverId"
@@ -106,29 +133,56 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="任务名称"  required label-width="100px">
-          <el-input type="text" v-model="tempScriptConfig.subject">
+        <el-form-item label="命令"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.shellName" ></el-input>
+          <el-input type="text" v-else  disabled="true" v-model="tempScriptConfig.shellName" ></el-input>
+        </el-form-item>
+        <el-form-item label="命令描述"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.shellDesc" ></el-input>
+          <el-input type="text" v-else disabled="true" v-model="tempScriptConfig.shellDesc" ></el-input>
+        </el-form-item>
+        <el-form-item label="通用日检 WAR"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.dailyWarning" ></el-input>
+          <el-input type="text" v-else   disabled="true"  v-model="tempScriptConfig.dailyWarning" ></el-input>
+        </el-form-item>
+        <el-form-item label="通用日检 CRI"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.dailyCritical" ></el-input>
+          <el-input type="text" v-else  disabled="true" v-model="tempScriptConfig.dailyCritical" ></el-input>
+        </el-form-item>
+        <el-form-item label="通用监控 WAR"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.monitorWarning" ></el-input>
+          <el-input type="text" v-else  disabled="true" v-model="tempScriptConfig.monitorWarning" ></el-input>
+        </el-form-item>
+        <el-form-item label="通用监控 CRI"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.monitorCritical" ></el-input>
+          <el-input type="text" v-else disabled="true" v-model="tempScriptConfig.monitorCritical" ></el-input>
+        </el-form-item>
+        <el-form-item label="私有日检 WAR"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.dailyWarningPriv" ></el-input>
+          <el-input type="text" v-else v-model="tempScriptConfig.dailyWarningPriv" ></el-input>
+        </el-form-item>
+        <el-form-item label="私有日检 CRI"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.dailyCriticalPriv" ></el-input>
+          <el-input type="text" v-else v-model="tempScriptConfig.dailyCriticalPriv" ></el-input>
+        </el-form-item>
+        <el-form-item label="私有监控 WAR"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.monitorWarningPriv" ></el-input>
+          <el-input type="text" v-else v-model="tempScriptConfig.monitorWarningPriv" ></el-input>
+        </el-form-item>
+        <el-form-item label="私有监控 CRI"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.monitorCriticalPriv" ></el-input>
+          <el-input type="text" v-else v-model="tempScriptConfig.monitorCriticalPriv" ></el-input>
+        </el-form-item>
+        <el-form-item label="超时时间"  label-width="120px">
+          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.timeOut" ></el-input>
+          <el-input type="text" v-else v-model="tempScriptConfig.timeOut" ></el-input>
+        </el-form-item>
+        <el-form-item label="执行时间" label-width="120px" >
+          <el-input v-model="tempScriptConfig.execTime" v-if="dialogStatus=='create'"   disabled="true">                                                  
+            <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
+            <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
           </el-input>
-        </el-form-item>
-        <el-form-item label="服务器类型"  required label-width="100px">
-          <el-input type="text" v-model="tempScriptConfig.systemType">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="自动启动" required label-width="100px">
-          <el-switch
-            v-model="tempScriptConfig.crontab"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-            active-value="1"
-            inactive-value="0">
-          </el-switch>
-        </el-form-item>
-        <el-form-item label="超时时间"  label-width="100px">
-          <el-input type="text" v-model="tempScriptConfig.timeOut">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="执行时间" required label-width="100px" >
-          <el-input v-model="tempScriptConfig.execTime">                                                  
+          <el-input v-model="tempScriptConfig.execTime" v-else>                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
             <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
           </el-input>
@@ -136,7 +190,7 @@
         <cron v-if="showCronBox" v-model="tempScriptConfig.execTime"  style="width:640px;color:#2c3e50;margin-left:-35px;"></cron> 
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false;alltypes=[]">取 消</el-button>
+        <el-button @click="dialogFormVisible = false;alltype=[]">取 消</el-button>
         <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
         <el-button type="primary" v-else @click="updateScript">修 改</el-button>
       </div>
@@ -157,7 +211,7 @@
         showCronBox: false,
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
-        listOne : [],
+
         alltype : [],
         e       : "",
         listLoading: false,//数据加载等待动画
@@ -166,52 +220,51 @@
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
-        crontab: [{
-          value:'0',
-          lable:'OFF'
-        },{
-          value:'1',
-          lable:'ON'
-        }],//角色列表
-        // sysVersion1: [{
+        // crontab: [{
         //   value:'0',
-        //   lable:'MySQL'
+        //   lable:'OFF'
         // },{
         //   value:'1',
-        //   lable:'Oracle'
-        // },{
-        //   value:'2',
-        //   lable:'SQLServer'
-        // },{
-        //   value:'3',
-        //   lable:'Redis'
-        // },{
-        //   value:'4',
-        //   lable:'Red Hat'
-        // }],//角色列表
+        //   lable:'ON'
+        // }],
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
-          update: '编辑',
+          update: '编辑配置',
           create: '新增配置'
         },
         tempScriptConfig: {
-          host               : '',
-          serviceName        : '',
-          post               : '',
-          applicationServer  : '',
-          userName           : '',
-          dbUsername         : '',
-          subject            : '',
-          systemType         : '',
-          crontab            : '',
-          sysVersion         : [],
-          timeOut            : '',
-          execTime           : '',
-          password           : '',
-          dbPassword         : '',
-          backupUrl          : '',
-          backupNum          : ''
+          host                   : '',
+          serviceName            : '',
+          post                   : '',
+          applicationServer      : '',
+          creationDate           : '',
+          createdBy              : '',
+          updatedBy              : '',
+          systemType             : '',
+          systemVersion          : [],
+          isDelete               : '',
+          userName               : '',
+          dbUsername             : '',
+          password               : '',
+          dbPassword             : '',
+          subject                : '',
+          type                   : '',
+          timeOut                : '',
+          execTime               : '',
+          dailyWarningPriv       : '',
+          dailyCritical_Priv     : '',
+          monitorWarningPriv     : '',
+          monitorCriticalPriv    : '',
+          shellName              : '',
+          shellDesc              : '',
+          dailyCritical          : '',
+          dailySuccess           : '',
+          dailyWarning           : '',
+          monitorCritical        : '',
+          monitorWarning         : '',
+          backupUrl              : '',
+          backupNum              : ''
         },
         
       }
@@ -226,7 +279,7 @@
     },
     created() {
       this.getList();
-      this.getOneList();
+      
       // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
       //   this.getAllRoles();
       // }
@@ -249,17 +302,17 @@
       //   })
       // },
       // 列字段翻译 ZS
-      stateFormat(row, column) {
-        console.log(row.crontab)
-        if (row.crontab === '1') {
-          return '是'
-        } else if (row.crontab === '0') {
-          return '否'
-        } 
-      },
+      // stateFormat(row, column) {
+      //   console.log(row.crontab)
+      //   if (row.crontab === '1') {
+      //     return '是'
+      //   } else if (row.crontab === '0') {
+      //     return '否'
+      //   } 
+      // },
       getAllServerType() {
         this.api({
-          url: "/scriptConfig/getAllServerType",
+          url: "/scriptConfig/getAllSystemType",
           method: "get"
         }).then(data => {
           this.alltype = data.list;
@@ -288,27 +341,13 @@
         this.listLoading = false;
         this.api({
           url: "/serverConfig/flushScheduler",
-          method: "get"
+          method: "get",
         }).catch(() => {
             _vue.$message.success("刷新成功")
             _vue.getList()
-        })
+          })
       },
 
-      getOneList() {
-        //查询列表
-        this.listLoading = true;
-        this.api({
-          
-          url: "/portionConfig/listPortionOneConfig",
-          method: "get",
-          params: this.listQuery
-        }).then(data => {
-          this.listLoading = false;
-          this.listOne = data.list;
-          this.totalCount = data.totalCount;
-        })
-      },
       handleSizeChange(val) {
         //改变每页数量
         this.listQuery.pageRow = val
@@ -329,92 +368,78 @@
         return (this.listQuery.pageNum - 1) * this.listQuery.pageRow + $index + 1
       },
       showCreate() {
-
-        let shellOne = this.listOne[0];
-        if (shellOne != undefined){
-            //获取已选择的sysVersion
-            let sysVersion  = shellOne.sysVersion;
-            //定义遍历数组
-            var arrStringTypes = new Array();
-            //以and分割 将类型存储数组中
-            for(var oldType in sysVersion.split(",")){
-                // vue是数组类型是用push赋值
-                arrStringTypes.push(sysVersion.split(",")[oldType]+'');
-              }
-            //显示新增对话框
-
-            this.tempScriptConfig.host                  = shellOne.IP;
-            this.tempScriptConfig.serviceName           = "";
-            this.tempScriptConfig.post                  = "";
-            this.tempScriptConfig.applicationServer     = "";
-            // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
-            this.tempScriptConfig.sysVersion            = arrStringTypes;
-            this.tempScriptConfig.userName              = "";
-            this.tempScriptConfig.password              = "";
-            this.tempScriptConfig.dbUsername            = "";
-            this.tempScriptConfig.dbPassword            = "";
-            this.tempScriptConfig.backupUrl             = "";
-            this.tempScriptConfig.backupNum             = "";
-            this.tempScriptConfig.subject               = "";
-            this.tempScriptConfig.systemType            = shellOne.systemType;
-            this.tempScriptConfig.crontab               = "";
-            this.tempScriptConfig.execTime              = shellOne.execTime;
-            this.tempScriptConfig.timeOut               = shellOne.timeOut;
-            this.dialogStatus = "create"
-            this.dialogFormVisible = true
-        }else{
-            this.tempScriptConfig.host                  = "";
-            this.tempScriptConfig.serviceName           = "";
-            this.tempScriptConfig.post                  = "";
-            this.tempScriptConfig.applicationServer     = "";
-            // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
-            this.tempScriptConfig.sysVersion            = "";
-            this.tempScriptConfig.userName              = "";
-            this.tempScriptConfig.password              = "";
-            this.tempScriptConfig.dbUsername            = "";
-            this.tempScriptConfig.dbPassword            = "";
-            this.tempScriptConfig.backupUrl             = "";
-            this.tempScriptConfig.backupNum             = "";
-            this.tempScriptConfig.subject               = "";
-            this.tempScriptConfig.systemType            = "";
-            this.tempScriptConfig.crontab               = "";
-            this.tempScriptConfig.execTime              = "";
-            this.tempScriptConfig.timeOut               = "";
-            this.dialogStatus = "create"
-            this.dialogFormVisible = true
-        }
+        debugger
+        this.tempScriptConfig.host                   = "";
+        this.tempScriptConfig.type                   = "";
+        this.tempScriptConfig.systemVersion          = [];
+        this.tempScriptConfig.serviceName            = "";
+        this.tempScriptConfig.post                   = "";
+        this.tempScriptConfig.applicationServer      = "";
+        this.tempScriptConfig.creationDate           = "";
+        this.tempScriptConfig.systemType             = "";
+        this.tempScriptConfig.userName               = "";
+        this.tempScriptConfig.dbUsername             = "";
+        this.tempScriptConfig.password               = "";
+        this.tempScriptConfig.dbPassword             = "";
+        this.tempScriptConfig.systemType             = "";
+        this.tempScriptConfig.timeOut                = "";
+        this.tempScriptConfig.execTime               = "";
+        this.tempScriptConfig.dailyWarningPriv       = "";
+        this.tempScriptConfig.dailyCritical_Priv     = "";
+        this.tempScriptConfig.monitorWarningPriv     = "";
+        this.tempScriptConfig.monitorCriticalPriv    = "";
+        this.tempScriptConfig.shellName              = "";
+        this.tempScriptConfig.shellDesc              = "";
+        this.tempScriptConfig.dailyCritical          = "";
+        this.tempScriptConfig.dailySuccess           = "";
+        this.tempScriptConfig.dailyWarning           = "";
+        this.tempScriptConfig.monitorCritical        = "";
+        this.tempScriptConfig.monitorWarning         = "";
+        this.tempScriptConfig.backupUrl              = "";
+        this.tempScriptConfig.backupNum              = "";
+        this.dialogStatus = "create"
+        this.dialogFormVisible = true
+      
    
       },
       showUpdate($index) {
         debugger
         let shell = this.list[$index];
-        //获取已选择的sysVersion
-        let sysVersion  = shell.sysVersion;
-        //定义遍历数组
+        let systemVersion  = shell.systemVersion;
         var arrStringTypes = new Array();
         //以and分割 将类型存储数组中
-        for(var oldType in sysVersion.split(",")){
+        for(var oldType in systemVersion.split(",")){
             // vue是数组类型是用push赋值
-						arrStringTypes.push(sysVersion.split(",")[oldType]+'');
-					}
-        this.tempScriptConfig.sysVersion = [];
-        this.tempScriptConfig.host                  = shell.host;
-        this.tempScriptConfig.serviceName           = shell.serviceName;
-        this.tempScriptConfig.post                  = shell.post;
-        this.tempScriptConfig.applicationServer     = shell.applicationServer;
-        // this.tempScriptConfig.sysVersion.push(shell.sysVersion)
-        this.tempScriptConfig.sysVersion            = arrStringTypes;
-        this.tempScriptConfig.userName              = shell.userName;
-        this.tempScriptConfig.password              = shell.password;
-        this.tempScriptConfig.dbUsername            = shell.dbUsername;
-        this.tempScriptConfig.dbPassword            = shell.dbPassword;
-        this.tempScriptConfig.backupUrl             = shell.backupUrl;
-        this.tempScriptConfig.backupNum             = shell.backupNum;
-        this.tempScriptConfig.subject               = shell.subject;
-        this.tempScriptConfig.systemType            = shell.systemType;
-        this.tempScriptConfig.crontab               = shell.crontab;
-        this.tempScriptConfig.execTime              = shell.execTime;
-        this.tempScriptConfig.timeOut               = shell.timeOut;
+            arrStringTypes.push(systemVersion.split(",")[oldType]+'');
+          }
+        this.tempScriptConfig.host                   = shell.host;
+        this.tempScriptConfig.systemVersion          = [];
+        this.tempScriptConfig.serviceName            = shell.serviceName;
+        this.tempScriptConfig.post                   = shell.post;
+        this.tempScriptConfig.applicationServer      = shell.applicationServer;
+        this.tempScriptConfig.creationDate           = shell.creationDate;
+        this.tempScriptConfig.systemType             = shell.systemType;
+        this.tempScriptConfig.systemVersion          = arrStringTypes;
+        this.tempScriptConfig.userName               = shell.userName;
+        this.tempScriptConfig.dbUsername             = shell.dbUsername;
+        this.tempScriptConfig.password               = shell.password;
+        this.tempScriptConfig.dbPassword             = shell.dbPassword;
+        this.tempScriptConfig.type                   = shell.type;
+        this.tempScriptConfig.timeOut                = shell.timeOut;
+        this.tempScriptConfig.execTime               = shell.execTime;
+        this.tempScriptConfig.dailyWarningPriv       = shell.dailyWarningPriv;
+        this.tempScriptConfig.dailyCritical_Priv     = shell.dailyCritical_Priv;
+        this.tempScriptConfig.monitorWarningPriv     = shell.monitorWarningPriv;
+        this.tempScriptConfig.monitorCriticalPriv    = shell.monitorCriticalPriv;
+        this.tempScriptConfig.shellName              = shell.shellName;
+        this.tempScriptConfig.shellDesc              = shell.shellDesc;
+        this.tempScriptConfig.dailyCritical          = shell.dailyCritical;
+        this.tempScriptConfig.dailySuccess           = shell.dailySuccess;
+        this.tempScriptConfig.dailyWarning           = shell.dailyWarning;
+        this.tempScriptConfig.monitorCritical        = shell.monitorCritical;
+        this.tempScriptConfig.monitorWarning         = shell.monitorWarning;
+        this.tempScriptConfig.backupUrl              = shell.backupUrl;
+        this.tempScriptConfig.backupNum              = shell.backupNum;
         this.tempScriptConfig.deleteStatus          = '1';
         this.tempScriptConfig.id                    = shell.id;
         this.dialogStatus                           = "update"
@@ -432,7 +457,6 @@
         }).then(() => {
           _vue.$message.success("新增成功")
           this.getList();
-          this.getOneList();
           this.dialogFormVisible = false
         })
       },
@@ -457,7 +481,6 @@
             duration: 1 * 1000,
             onClose: () => {
               _vue.getList();
-              _vue.getOneList();
             }
           })
         })

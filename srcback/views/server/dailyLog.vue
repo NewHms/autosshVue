@@ -90,7 +90,7 @@
         listQuery_fail: {
            pageNum: 1,//页码
            pageRow: 50,//每页条数,
-           resultStatus : '2',
+           resultStatus : '0',
           //execStatus : '',
         },
         listQuery_warning: {
@@ -102,7 +102,7 @@
         listQuery_success: {
            pageNum: 1,//页码
            pageRow: 50,//每页条数,
-           resultStatus : '0',
+           resultStatus : '2',
           //execStatus : '',
         },
         listQuery_execl: {
@@ -227,7 +227,7 @@
         //查询告警列表
         debugger
         this.listLoading = true;
-        this.listQuery_daily.dataTime =  this.listQuery.dataTime
+        this.listQuery_daily.dataTime =  this.listQuery_daily.dataTime
         this.api({
           url: "/logConfig/listLog",
           method: "get",
@@ -244,7 +244,7 @@
         //查询告警列表
         debugger
         this.listLoading = true;
-        this.listQuery_monitor.dataTime =  this.listQuery.dataTime
+        this.listQuery_monitor.dataTime =  this.listQuery_monitor.dataTime
         this.api({
           url: "/logConfig/listLog",
           method: "get",
