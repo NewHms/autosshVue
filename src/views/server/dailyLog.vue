@@ -6,11 +6,10 @@
           <el-input v-model="listQuery.IP" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <!-- <el-input v-model="listQuery.execStatus" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input> -->
-          <el-button type="danger"  prefix-icon="el-icon-search" @click="getList_fail">失败</el-button>
-          <el-button type="warning" prefix-icon="el-icon-search" @click="getList_warning">告警</el-button>
+          <el-button type="danger"  prefix-icon="el-icon-search" @click="getList_fail" textMap="FAIL">失败</el-button>
+          <el-button type="warning" prefix-icon="el-icon-search" @click="getList_critical">告警C</el-button>
+          <el-button type="warning" prefix-icon="el-icon-search" @click="getList_warning" >告警W</el-button>
           <el-button type="success" prefix-icon="el-icon-search" @click="getList_success">正常</el-button>
-          <el-button type="success" prefix-icon="el-icon-search" @click="getList_daily">日检</el-button>
-          <el-button type="success" prefix-icon="el-icon-search" @click="getList_monitor">监控</el-button>
           <el-button :loading="downloadLoading" style="margin:0 0 20px 20px;float:right" type="primary" icon="document" prefix-icon="el-icon-search" @click="dailyLogToExecl">导出EXECL</el-button>
           <el-date-picker
              v-model="listQuery.dataTime"
@@ -20,6 +19,10 @@
              value-format=" yyyy-MM-dd" format="yyyy-MM-dd">
           </el-date-picker>
       </el-form-item>
+      <el-form-item>
+      <el-button type="info" prefix-icon="el-icon-search" @click="getList_daily">日检</el-button>
+      <el-button type="info" prefix-icon="el-icon-search" @click="getList_monitor">监控</el-button>
+      </el-form-item>    
       </el-form>
   </div>
     
@@ -90,19 +93,25 @@
         listQuery_fail: {
            pageNum: 1,//页码
            pageRow: 50,//每页条数,
-           resultStatus : '2',
+           resultStatus : '2_FAIL',
           //execStatus : '',
         },
         listQuery_warning: {
            pageNum: 1,//页码
            pageRow: 50,//每页条数,
-           resultStatus : '1',
+           resultStatus : '1_WARNING',
+          //execStatus : '',
+        },
+        listQuery_critical: {
+           pageNum: 1,//页码
+           pageRow: 50,//每页条数,
+           resultStatus : '1_CRITICAL',
           //execStatus : '',
         },
         listQuery_success: {
            pageNum: 1,//页码
            pageRow: 50,//每页条数,
-           resultStatus : '0',
+           resultStatus : '0_SUCCESS',
           //execStatus : '',
         },
         listQuery_execl: {
@@ -126,12 +135,7 @@
         //   value:'4',
         //   lable:'Red Hat'
         // }],//角色列表
-        dialogStatus: 'create',
-        dialogFormVisible: false,
-        textMap: {
-          update: '编辑',
-          create: '新增配置'
-        },
+
         tempScriptConfig: {
           IP         : '',
           USER       : '',
@@ -194,6 +198,8 @@
         //查询失败列表
         this.listLoading = true;
         this.listQuery_fail.dataTime =  this.listQuery.dataTime
+        this.listQuery_fail.IP       =  this.listQuery.IP
+        this.dialogStatus            = "fail"
         this.api({
           url: "/logConfig/listLog",
           method: "get",
@@ -211,10 +217,31 @@
         debugger
         this.listLoading = true;
         this.listQuery_warning.dataTime =  this.listQuery.dataTime
+        this.listQuery_warning.IP       =  this.listQuery.IP
+        this.dialogStatus               = "warning"
         this.api({
           url: "/logConfig/listLog",
           method: "get",
           params: this.listQuery_warning
+          
+        }).then(data => {
+          this.listLoading = false;
+          this.list = data.list;
+          this.totalCount = data.totalCount;
+        })
+      },
+
+      getList_critical() {
+        //查询告警列表
+        debugger
+        this.listLoading = true;
+        this.listQuery_critical.dataTime =  this.listQuery.dataTime
+        this.listQuery_critical.IP       =  this.listQuery.IP
+        this.dialogStatus                = "critical"
+        this.api({
+          url: "/logConfig/listLog",
+          method: "get",
+          params: this.listQuery_critical
           
         }).then(data => {
           this.listLoading = false;
@@ -228,6 +255,8 @@
         debugger
         this.listLoading = true;
         this.listQuery_daily.dataTime =  this.listQuery.dataTime
+        this.listQuery_daily.IP       =  this.listQuery.IP
+        this.dialogStatus             = "daily"
         this.api({
           url: "/logConfig/listLog",
           method: "get",
@@ -245,6 +274,8 @@
         debugger
         this.listLoading = true;
         this.listQuery_monitor.dataTime =  this.listQuery.dataTime
+        this.listQuery_monitor.IP       =  this.listQuery.IP
+        this.dialogStatus               = "monitor"
         this.api({
           url: "/logConfig/listLog",
           method: "get",
@@ -261,6 +292,8 @@
         //查询成功列表
         this.listLoading = true;
         this.listQuery_success.dataTime =  this.listQuery.dataTime
+        this.listQuery_success.IP       =  this.listQuery.IP
+        this.dialogStatus               = "success"
         this.api({
           url: "/logConfig/listLog",
           method: "get",
@@ -276,57 +309,96 @@
         debugger
         //刷新定时器
         let _vue = this;
-        this.listLoading = false;
+        this.listLoading = true;
         this.listQuery_execl.dataTime =  this.listQuery.dataTime
         this.api({
           url: "/logConfig/dailyLogToExecl",
           method: "get",
           params: this.listQuery_execl
+        }).then(() => {
+          _vue.$message.success("导出成功")
+          this.getList();
+          this.dialogFormVisible = false
         }).catch(() => {
-            _vue.$message.success("导出成功")
+            _vue.$message.error("导出失败")
             _vue.getList()
         })
       },
       handleSizeChange(val) {
         //改变每页数量
+        debugger
         this.listQuery.pageRow = val
         this.handleFilter();
       },
       handleCurrentChange(val) {
+        debugger
         //改变页码
-        this.listQuery.pageNum = val
-        this.getList();
+        if (this.dialogStatus == "success"){
+          this.listQuery_success.pageNum = val
+          this.getList_success();
+        }else if(this.dialogStatus == "critical"){
+          this.listQuery_critical.pageNum = val
+          this.getList_critical();
+        }else if(this.dialogStatus == "warning"){
+          this.listQuery_warning.pageNum = val
+          this.getList_warning();
+        }else if(this.dialogStatus == "fail"){
+          this.listQuery_fail.pageNum = val
+          this.getList_fail();
+        }else if(this.dialogStatus == "monitor"){
+          this.listQuery_monitor.pageNum = val
+          this.getList_monitor();
+        }else if(this.dialogStatus == "daily"){
+          this.listQuery_daily.pageNum = val
+          this.getList_daily();
+        }else{
+          this.listQuery.pageNum = val
+          this.getList();
+        }          
       },
       handleFilter() {
         //查询事件
-        this.listQuery.pageNum = 1
-        this.getList()
+        if (this.dialogStatus == "success"){
+          this.listQuery_success.pageNum = val
+          this.getList_success();
+        }else if(this.dialogStatus == "critical"){
+          this.listQuery_critical.pageNum = val
+          this.getList_critical();
+        }else if(this.dialogStatus == "warning"){
+          this.listQuery_warning.pageNum = val
+          this.getList_warning();
+        }else if(this.dialogStatus == "fail"){
+          this.listQuery_fail.pageNum = val
+          this.getList_fail();
+        }else if(this.dialogStatus == "monitor"){
+          this.listQuery_monitor.pageNum = val
+          this.getList_monitor();
+        }else if(this.dialogStatus == "daily"){
+          this.listQuery_daily.pageNum = val
+          this.getList_daily();
+        }else{
+          this.listQuery.pageNum = val
+          this.getList();
+        }  
       },
       getIndex($index) {
         //表格序号
-        return (this.listQuery.pageNum - 1) * this.listQuery.pageRow + $index + 1
-      },
-      removeUser($index) {
-        let _vue = this;
-        this.$confirm('确定删除此日志?', '提示', {
-          confirmButtonText: '确定',
-          showCancelButton: false,
-          type: 'warning'
-        }).then(() => {
-          let script = _vue.list[$index];
-          //user.deleteStatus = '2';
-          this.tempScriptConfig.id = script.id;
-          _vue.api({
-            url: "/logConfig/deleteLog",
-            method: "post",
-            data: this.tempScriptConfig
-          }).then(() => {
-            _vue.$message.success("删除成功")
-            _vue.getList()
-          }).catch(() => {
-            _vue.$message.error("删除失败")
-          })
-        })
+        if (this.dialogStatus == "success"){
+          return (this.listQuery_success.pageNum - 1) * this.listQuery_success.pageRow + $index + 1
+        }else if(this.dialogStatus == "critical"){
+          return (this.listQuery_critical.pageNum - 1) * this.listQuery_critical.pageRow + $index + 1
+        }else if(this.dialogStatus == "warning"){
+          return (this.listQuery_warning.pageNum - 1) * this.listQuery_warning.pageRow + $index + 1
+        }else if(this.dialogStatus == "fail"){
+          return (this.listQuery_fail.pageNum - 1) * this.listQuery_fail.pageRow + $index + 1
+        }else if(this.dialogStatus == "monitor"){
+          return (this.listQuery_monitor.pageNum - 1) * this.listQuery_monitor.pageRow + $index + 1
+        }else if(this.dialogStatus == "daily"){
+          return (this.listQuery_daily.pageNum - 1) * this.listQuery_daily.pageRow + $index + 1
+        }else{
+          return (this.listQuery.pageNum - 1) * this.listQuery.pageRow + $index + 1
+        }  
+        
       },
     }
   }

@@ -9,6 +9,16 @@
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
           <el-button type="text" prefix-icon="el-icon-search" @click="flushScheduler" style="float:right">刷新定时器</el-button>
         </el-form-item>
+
+        <el-form-item>
+        <el-checkbox-group v-model="allAppServer" @change="handleCheckedCitiesChange">
+          <el-checkbox v-for="item in allApplicaServer" 
+                       :label="item.serverIp" 
+                       :key="item.serverAppId"
+                       :value="item.serverIp" disabled>
+          </el-checkbox>
+        </el-checkbox-group>
+        </el-form-item>
       </el-form>
     </div>
     
@@ -56,7 +66,7 @@
           </el-table-column>
         </el-table-column>
         <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
-        <el-table-column align="center" label="编辑"         width="70" v-if="hasPerm('scriptConfig:update')" fixed="right">
+        <el-table-column align="center" label="编辑"         width="70" v-if="hasPerm('scriptConfig:update')">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
             <el-button type="text" icon="el-icon-delete" 
@@ -207,11 +217,13 @@
           cron
     },
     data() {
+      
       return {    
+        isIndeterminate: true,
         showCronBox: false,
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
-
+        allAppServer: [],
         alltype : [],
         e       : "",
         listLoading: false,//数据加载等待动画
@@ -279,6 +291,7 @@
     },
     created() {
       this.getList();
+      this.getAllAppServer();
       
       // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
       //   this.getAllRoles();
@@ -318,10 +331,19 @@
           this.alltype = data.list;
         })
       },
+      getAllAppServer() {
+        this.api({
+          url: "/scriptConfig/getAllAppServer",
+          method: "get"
+        }).then(data => {
+          this.allApplicaServer = data.list;
+        })
+      },
       getList() {
-        // debugger
+        debugger
         //查询列表
         this.listLoading = true;
+        //this.listQuery.test = this.allAppServer;
         this.api({
 
           url: "/serverConfig/listServerConfig",

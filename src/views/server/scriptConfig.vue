@@ -3,11 +3,11 @@
     <div class="filter-container">
       <el-form>
  
-      <el-form-item>
+        <el-form-item>
           <el-input v-model="listQuery.shellDesc" placeholder="请输入命令描述" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
-        </el-form-item>
+        </el-form-item> 
       </el-form>
     </div>
     
@@ -56,27 +56,27 @@
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 400px; margin-left:50px;'>
-        <el-form-item label="当前编号" required label-width="145px">
+        <el-form-item label="当前编号" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.maxCode"  :disabled="true"> 
           </el-input>
         </el-form-item>          
-        <el-form-item label="命令编号" required label-width="145px">
+        <el-form-item label="命令编号" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.code"  placeholder="请输入10的倍数" > 
           </el-input>
         </el-form-item>
-        <el-form-item label="命令" required label-width="145px">
+        <el-form-item label="命令" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.shellName"> 
           </el-input>
         </el-form-item>
-        <el-form-item label="命令描述" required label-width="145px">
+        <el-form-item label="命令描述" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.shellDesc"> 
           </el-input>
         </el-form-item>
-        <el-form-item label="命令类型" required label-width="145px">
+        <el-form-item label="命令类型" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.type"> 
           </el-input>
         </el-form-item>
-        <el-form-item label="适用系统" required label-width="145px">
+        <el-form-item label="适用系统" required label-width="150px">
           <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" style='width: 255px;'> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in alltype"
@@ -86,39 +86,39 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="适配正则" required label-width="145px">
+        <el-form-item label="适配正则"  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.shellUseRe"> 
           </el-input>
         </el-form-item>
-        <el-form-item label="判断规则" required label-width="145px">
+        <el-form-item label="判断规则"  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.dailyRule" placeholder="0->等式;1->不等式"> 
           </el-input>
         </el-form-item>       
-        <el-form-item label="SUCCESS 阀值"  label-width="145px">
+        <el-form-item label="SUCCESS 阀值"  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.dailySuccess">
           </el-input>
         </el-form-item>
-        <el-form-item label="日检 WARNING 阀值" label-width="145px">
+        <el-form-item label="日检 WARNING 阀值"  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.dailyWarning">
           </el-input>
         </el-form-item>
-        <el-form-item label="日检 CRITICAL 阀值" label-width="145px">
+        <el-form-item label="日检 CRITICAL 阀值"  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.dailyCritical">
           </el-input>
         </el-form-item>
-        <el-form-item label="监控 WARNING 阀值" label-width="145px">
+        <el-form-item label="监控 WARNING 阀值"  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.monitorWarning">
           </el-input>
         </el-form-item>
-        <el-form-item label="监控 CRITICAL 阀值" label-width="145px">
+        <el-form-item label="监控 CRITICAL 阀值"  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.monitorCritical">
           </el-input>
         </el-form-item>
-        <el-form-item label="超时时间(s)" label-width="145px">
+        <el-form-item label="超时时间(s)" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.timeOut">
           </el-input>
         </el-form-item>
-        <el-form-item label="执行时间" required label-width="145px" >
+        <el-form-item label="执行时间" required label-width="150px" >
           <el-input v-model="tempScriptConfig.execTime">                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
             <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
@@ -175,8 +175,8 @@
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
-          update: '编辑配置',
-          create: '新建配置'
+          update: '编辑脚本',
+          create: '新建脚本'
         },
         tempScriptConfig: {
           type            : '',  
@@ -259,13 +259,13 @@
         this.tempScriptConfig.shellName       =  "";
         this.tempScriptConfig.shellDesc       =  "";  
         this.tempScriptConfig.code            =  "";
-        this.tempScriptConfig.dailyRule       =  "";  
-        this.tempScriptConfig.shellUseRe      =  "";
-        this.tempScriptConfig.dailySuccess    =  "";  
-        this.tempScriptConfig.dailyWarning    =  "";
-        this.tempScriptConfig.dailyCritical   =  "";  
-        this.tempScriptConfig.monitorWarning  =  ""; 
-        this.tempScriptConfig.monitorCritical =  "";  
+        this.tempScriptConfig.dailyRule       =  null;  
+        this.tempScriptConfig.shellUseRe      =  null;
+        this.tempScriptConfig.dailySuccess    =  null;  
+        this.tempScriptConfig.dailyWarning    =  null;
+        this.tempScriptConfig.dailyCritical   =  null;  
+        this.tempScriptConfig.monitorWarning  =  null; 
+        this.tempScriptConfig.monitorCritical =  null;  
         this.tempScriptConfig.execTime        =  "";
         this.tempScriptConfig.timeOut         =  "";
         this.tempScriptConfig.systemType      =  "";  
