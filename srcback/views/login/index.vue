@@ -3,7 +3,7 @@
     <el-form autoComplete="on" :model="loginForm" :rules="loginRules" ref="loginForm" label-position="left"
              label-width="0px"
              class="card-box login-form">
-      <h2 class="title">日检平台</h2>
+      <h2 class="title">监控平台</h2>
       <el-form-item prop="username">
         <span class="svg-container svg-container_login">
           <svg-icon icon-class="user"/>

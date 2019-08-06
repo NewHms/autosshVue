@@ -169,7 +169,7 @@
       // },
       getAllServerType() {
         this.api({
-          url: "/scriptConfig/getAllSystemType",
+          url: "/scriptConfig/getAllVersionType",
           method: "get"
         }).then(data => {
           this.alltype = data.list;

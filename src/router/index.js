@@ -73,19 +73,40 @@ export const asyncRouterMap = [
     name: '',
     meta: {title: '数据库日检', icon: 'table'},
     children: [  
+      // {
+      //   path: '', 
+      //   name: 'Agent信息', 
+      //   component: _import('server/details'), 
+      //   meta: {title: 'Agent信息', icon: 'tree'}, 
+      //   menu: 'details'
+      // },
       {
         path: '', 
-        name: ' 检查脚本配置', 
+        name: '检查脚本配置', 
         component: _import('server/scriptConfig'), 
         meta: {title: '检查脚本配置', icon: 'tree'}, 
-        menu: 'sh_setting'
+        menu: 'shell_setting'
       },
       {
-        path: 'sh_setting', 
+        path: 'server_setting', 
         name: '服务器配置', 
-        component: _import('server/indexConfig'), 
+        component: _import('server/detailsbak'), 
         meta: {title: '服务器配置', icon: 'tree'}, 
-        menu: 'server'
+        menu: 'server_setting'
+      },   
+      {
+        path: 'rule_setting', 
+        name: '私有阀值配置', 
+        component: _import('server/indexConfig'), 
+        meta: {title: '私有阀值配置', icon: 'tree'}, 
+        menu: 'rule_setting'
+      }, 
+      {
+        path: 'resources', 
+        name: '资源配置', 
+        component: _import('server/resources'), 
+        meta: {title: '资源配置', icon: 'tree'}, 
+        menu: 'resources'
       }, 
       {
         path: 'job_runnning', 
@@ -95,8 +116,15 @@ export const asyncRouterMap = [
         menu: 'job_runnning'
       }, 
       {
+        path: 'sql_log', 
+        name: 'SQL性能监控', 
+        component: _import('server/sqlLog'), 
+        meta: {title: 'SQL性能监控', icon: 'tree'}, 
+        menu: 'sql_log'
+      },
+      {
         path: 'daily_log', 
-        name: ' 日志', 
+        name: '日志', 
         component: _import('server/dailyLog'), 
         meta: {title: '日志', icon: 'tree'}, 
         menu: 'daliy_log'

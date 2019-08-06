@@ -6,17 +6,8 @@
         <el-form-item>
           <el-input v-model="listQuery.host" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
+          <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
           <el-button type="text" prefix-icon="el-icon-search" @click="flushScheduler" style="float:right">刷新定时器</el-button>
-        </el-form-item>
-
-        <el-form-item>
-          <el-checkbox-group v-model="allAppServer" @change="handleCheckedCitiesChange">
-            <el-checkbox v-for="item in allApplicaServer" 
-                        :label="item.appType" 
-                        :key  ="item.appId"
-                        :value="item.appType" disabled>
-            </el-checkbox>
-          </el-checkbox-group>
         </el-form-item>
       </el-form>
     </div>
@@ -28,35 +19,24 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-        <el-table-column align="center"   label="服务器"         prop="host" width="130" sortable></el-table-column>
-        <el-table-column align="center"   label="实例名"         prop="serviceName" width="75"></el-table-column>
-        <el-table-column align="center"   label="服务器类型"     prop="systemType" width="70"></el-table-column>
-        <el-table-column align="center"   label="命令"           prop="shellName" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-        <el-table-column align="center"   label="命令描述"       prop="shellDesc"  width="170" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-        <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="100"></el-table-column>
-        <el-table-column align="center"   label="通用阀值">
-          <el-table-column align="center" label="日检阀值">
-            <el-table-column align="center" label="WAR" prop="dailyWarning"  width="60"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="dailyCritical" width="50"></el-table-column>
-          </el-table-column>
-          <el-table-column align="center"   label="监控阀值">
-            <el-table-column align="center" label="WAR" prop="monitorWarning"  width="60"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="monitorCritical" width="50"></el-table-column>
-          </el-table-column>
+        <el-table-column align="center"   label="服务器"       prop="host"  width="150"  sortable></el-table-column>
+        <el-table-column align="center"   label="实例名"       prop="serviceName" ></el-table-column>
+        <el-table-column align="center"   label="机房"         prop="location" ></el-table-column>
+        <el-table-column align="center"   label="监控服务器"   prop="applicationServer" width="150" sortable></el-table-column>
+        <el-table-column align="center"   label="用户名"       width="100">
+          <el-table-column align="center" label="OS用户名"     prop="userName" width="120"></el-table-column>
+          <el-table-column align="center" label="DB用户名"     prop="dbUsername" ></el-table-column>
         </el-table-column>
-        <el-table-column align="center"     label="私有阀值">
-          <el-table-column align="center"   label="日检阀值">
-            <el-table-column align="center" label="WAR" prop="dailyWarningPriv"  width="60"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="dailyCriticalPriv" width="50"></el-table-column>
-          </el-table-column>
-          <el-table-column align="center"   label="监控阀值">
-            <el-table-column align="center" label="WAR" prop="monitorWarningPriv"  width="60"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="monitorCriticalPriv" width="50"></el-table-column>
-          </el-table-column>
+        <el-table-column align="center"   label="备份配置"  width="100">
+          <el-table-column align="center" label="路径"     prop="backupUrl" ></el-table-column>
+          <el-table-column align="center" label="个数"     prop="backupNum" ></el-table-column>
         </el-table-column>
-        <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
-        <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
+        <el-table-column align="center"   label="服务器类型"     prop="systemType" ></el-table-column>
+        <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="160" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+        <el-table-column align="center" width="160" v-if="hasPerm('scriptConfig:update')">
           <template slot-scope="scope">
+            <el-button type="text" prefix-icon="el-icon-search" @click="goToDetails(scope.$index)">详细信息
+            </el-button>
             <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
             <el-button type="text" icon="el-icon-delete" 
                      @click="removeUser(scope.$index)">
@@ -80,11 +60,25 @@
                style='width: 350px; margin-left:50px;' label="right">
                <!--label-width="100px" 设置长度 -->
         <el-form-item label="服务器"  required  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.host"           disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.host">
           </el-input>
         </el-form-item>
+        <el-form-item label="实例名"  required  label-width="120px">
+          <el-input type="text" v-model="tempScriptConfig.serviceName">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="机房" required label-width="120px">
+          <el-select v-model="tempScriptConfig.location"  placeholder="请选择" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in allLocation"
+              :key="item.locationId"
+              :label="item.locationType"
+              :value="item.locationType">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="监控服务器" required label-width="120px">
-          <el-select v-model="tempScriptConfig.applicationServer"         disabled="true" placeholder="请选择" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+          <el-select v-model="tempScriptConfig.applicationServer"  placeholder="请选择" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in allApplicaServer"
               :key="item.appId"
@@ -94,35 +88,35 @@
           </el-select>
         </el-form-item>
         <el-form-item label="端口"  required  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.post"           disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.post">
           </el-input>
         </el-form-item>
         <el-form-item label="OS用户"  required  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.userName"       disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.userName">
           </el-input>
         </el-form-item>
         <el-form-item label="OS密码"  required  label-width="120px">
-          <el-input type="password" v-model="tempScriptConfig.password"   disabled="true">
+          <el-input type="password" v-model="tempScriptConfig.password">
           </el-input>
         </el-form-item>
         <el-form-item label="DB用户"  required  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.dbUsername"     disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.dbUsername">
           </el-input>
         </el-form-item>
         <el-form-item label="DB密码"  required  label-width="120px">
-          <el-input type="password" v-model="tempScriptConfig.dbPassword" disabled="true">
+          <el-input type="password" v-model="tempScriptConfig.dbPassword">
           </el-input>
         </el-form-item>
         <el-form-item label="备份路径"  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.backupUrl"      disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.backupUrl">
           </el-input>
         </el-form-item>
         <el-form-item label="备份个数"  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.backupNum"      disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.backupNum">
           </el-input>
         </el-form-item>
         <el-form-item label="服务器类型" required label-width="120px">
-          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" disabled="true" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in allServer"
               :key="item.serverId"
@@ -132,7 +126,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="适用版本" required label-width="120px">
-          <el-select v-model="tempScriptConfig.systemVersion" disabled="true"  placeholder="请选择" label-width="80px" style='width: 230px;'> 
+          <el-select v-model="tempScriptConfig.systemVersion" multiple  placeholder="请选择" label-width="80px" style='width: 230px;'> 
             <el-option
               v-for="item in alltype"
               :key="item.versionId"
@@ -141,61 +135,6 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="命令"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.shellName" ></el-input>
-          <el-input type="text" v-else  disabled="true" v-model="tempScriptConfig.shellName" ></el-input>
-        </el-form-item>
-        <el-form-item label="命令描述"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.shellDesc" ></el-input>
-          <el-input type="text" v-else disabled="true" v-model="tempScriptConfig.shellDesc" ></el-input>
-        </el-form-item>
-        <el-form-item label="通用日检 WAR"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.dailyWarning" ></el-input>
-          <el-input type="text" v-else   disabled="true"  v-model="tempScriptConfig.dailyWarning" ></el-input>
-        </el-form-item>
-        <el-form-item label="私有日检 WAR"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.dailyWarningPriv" ></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.dailyWarningPriv" ></el-input>
-        </el-form-item>
-        <el-form-item label="通用日检 CRI"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.dailyCritical" ></el-input>
-          <el-input type="text" v-else  disabled="true" v-model="tempScriptConfig.dailyCritical" ></el-input>
-        </el-form-item>
-        <el-form-item label="私有日检 CRI"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.dailyCriticalPriv" ></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.dailyCriticalPriv" ></el-input>
-        </el-form-item>
-        <el-form-item label="通用监控 WAR"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.monitorWarning" ></el-input>
-          <el-input type="text" v-else  disabled="true" v-model="tempScriptConfig.monitorWarning" ></el-input>
-        </el-form-item>
-        <el-form-item label="私有监控 WAR"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.monitorWarningPriv" ></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.monitorWarningPriv" ></el-input>
-        </el-form-item>
-        <el-form-item label="通用监控 CRI"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.monitorCritical" ></el-input>
-          <el-input type="text" v-else disabled="true" v-model="tempScriptConfig.monitorCritical" ></el-input>
-        </el-form-item>        
-        <el-form-item label="私有监控 CRI"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.monitorCriticalPriv" ></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.monitorCriticalPriv" ></el-input>
-        </el-form-item>
-        <el-form-item label="超时时间"  label-width="120px">
-          <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.timeOut" ></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.timeOut" ></el-input>
-        </el-form-item>
-        <el-form-item label="执行时间" label-width="120px" >
-          <el-input v-model="tempScriptConfig.execTime" v-if="dialogStatus=='create'" >                                                  
-            <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
-            <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
-          </el-input>
-          <el-input v-model="tempScriptConfig.execTime" v-else>                                                  
-            <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
-            <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
-          </el-input>
-        </el-form-item>
-        <cron v-if="showCronBox" v-model="tempScriptConfig.execTime"  style="width:640px;color:#2c3e50;margin-left:-35px;"></cron> 
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false;alltype=[]">取 消</el-button>
@@ -209,11 +148,7 @@
 </template>
 <script>
   import {mapGetters} from 'vuex'
-  import cron from './cron'
   export default {
-    components: {
-          cron
-    },
     data() {
       
       return {    
@@ -222,22 +157,15 @@
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
         allAppServer: [],
-        allServer: '',
-        alltype : [],
-        e       : "",
+        allServer   : '',
+        alltype     : [],
+        allLocation : '',
         listLoading: false,//数据加载等待动画
         listQuery: {
           pageNum: 1,//页码
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
-        // crontab: [{
-        //   value:'0',
-        //   lable:'OFF'
-        // },{
-        //   value:'1',
-        //   lable:'ON'
-        // }],
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
@@ -249,31 +177,13 @@
           serviceName            : '',
           post                   : '',
           applicationServer      : '',
-          creationDate           : '',
-          createdBy              : '',
-          updatedBy              : '',
+          location               : '',
           systemType             : '',
-          systemVersion          : [],
-          isDelete               : '',
+          systemVersion          : [],   
           userName               : '',
           dbUsername             : '',
           password               : '',
           dbPassword             : '',
-          subject                : '',
-          type                   : '',
-          timeOut                : '',
-          execTime               : '',
-          dailyWarningPriv       : '',
-          dailyCriticalPriv     : '',
-          monitorWarningPriv     : '',
-          monitorCriticalPriv    : '',
-          shellName              : '',
-          shellDesc              : '',
-          dailyCritical          : '',
-          dailySuccess           : '',
-          dailyWarning           : '',
-          monitorCritical        : '',
-          monitorWarning         : '',
           backupUrl              : '',
           backupNum              : ''
         },
@@ -282,20 +192,10 @@
 
     },
     
-     watch: {
-      
-        applicationServer (now,old) {
-        console.log(now,old)
-      }
-    },
     created() {
       this.getList();
-      
-      
-      // if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
-      //   this.getAllRoles();
-      // }
       if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
+        this.getAllLocation();
         this.getAllVersionType();
         this.getAllAppServer();
         this.getAllServer();
@@ -307,29 +207,28 @@
       ])
     },
     methods: {
-      // getAllRoles() {
-      //   this.api({
-      //     url: "/user/getAllRoles",
-      //     method: "get"
-      //   }).then(data => {
-      //     this.roles = data.list;
-      //   })
-      // },
-      // 列字段翻译 ZS
-      // stateFormat(row, column) {
-      //   console.log(row.crontab)
-      //   if (row.crontab === '1') {
-      //     return '是'
-      //   } else if (row.crontab === '0') {
-      //     return '否'
-      //   } 
-      // },
+      goToDetails($index) {
+        debugger
+        let _vue = this;
+        let details = _vue.list[$index];
+        this.$router.push({name: '私有阀值配置', params: {host: details.host,
+                                                       serviceName : details.serviceName,
+                                                       systemType  : details.systemType}})
+      },
       getAllVersionType() {
         this.api({
           url: "/scriptConfig/getAllVersionType",
           method: "get"
         }).then(data => {
           this.alltype = data.list;
+        })
+      },
+      getAllLocation() {
+        this.api({
+          url: "/scriptConfig/getAllLocation",
+          method: "get"
+        }).then(data => {
+          this.allLocation = data.list;
         })
       },
       getAllServer() {
@@ -353,45 +252,18 @@
         //查询列表
         this.listLoading = true;
         //this.listQuery.test = this.allAppServer;
-        if(this.$route.params.host != undefined && this.$route.params.serviceName != undefined && this.$route.params.systemType != undefined) {
-          this.listQuery.host        =  this.$route.params.host
-          this.listQuery.serviceName =  this.$route.params.serviceName
-          this.listQuery.systemType  =  this.$route.params.systemType
-        }else{
-          this.listQuery.host = this.listQuery.host
-        } 
         this.api({
 
-          url: "/serverConfig/listServerConfig",
+          url: "/serverConfig/getDetails",
           method: "get",
           params: this.listQuery
         }).then(data => {
           this.listLoading = false;
           this.list = data.list;
           this.totalCount = data.totalCount;
-          this.$route.params.host        =  undefined;
-          this.$route.params.serviceName =  undefined;
-          this.$route.params.systemType  =  undefined;
-          this.listQuery.serviceName     =  undefined;
-          this.listQuery.systemType      =  undefined;
         })
-        
       },
-
-      flushScheduler() {
-        // debugger
-        //刷新定时器
-        let _vue = this;
-        this.listLoading = false;
-        this.api({
-          url: "/serverConfig/flushScheduler",
-          method: "get",
-        }).catch(() => {
-            _vue.$message.success("刷新成功")
-            _vue.getList()
-          })
-      },
-
+      
       handleSizeChange(val) {
         //改变每页数量
         this.listQuery.pageRow = val
@@ -421,6 +293,7 @@
         this.tempScriptConfig.applicationServer      = "";
         this.tempScriptConfig.creationDate           = "";
         this.tempScriptConfig.systemType             = "";
+        this.tempScriptConfig.location               = "";
         this.tempScriptConfig.userName               = "";
         this.tempScriptConfig.dbUsername             = "";
         this.tempScriptConfig.password               = "";
@@ -429,7 +302,7 @@
         this.tempScriptConfig.timeOut                = "";
         this.tempScriptConfig.execTime               = "";
         this.tempScriptConfig.dailyWarningPriv       = "";
-        this.tempScriptConfig.dailyCriticalPriv      = "";
+        this.tempScriptConfig.dailyCritical_Priv     = "";
         this.tempScriptConfig.monitorWarningPriv     = "";
         this.tempScriptConfig.monitorCriticalPriv    = "";
         this.tempScriptConfig.shellName              = "";
@@ -449,13 +322,22 @@
       showUpdate($index) {
         debugger
         let shell = this.list[$index];
+        let systemVersion  = shell.systemVersion;
+        var arrStringTypes = new Array();
+        //以and分割 将类型存储数组中
+        for(var oldType in systemVersion.split(",")){
+            // vue是数组类型是用push赋值
+            arrStringTypes.push(systemVersion.split(",")[oldType]+'');
+          }
         this.tempScriptConfig.host                   = shell.host;
+        this.tempScriptConfig.systemVersion          = [];
         this.tempScriptConfig.serviceName            = shell.serviceName;
         this.tempScriptConfig.post                   = shell.post;
         this.tempScriptConfig.applicationServer      = shell.applicationServer;
         this.tempScriptConfig.creationDate           = shell.creationDate;
         this.tempScriptConfig.systemType             = shell.systemType;
-        this.tempScriptConfig.systemVersion          = shell.systemVersion;
+        this.tempScriptConfig.location               = shell.location;
+        this.tempScriptConfig.systemVersion          = arrStringTypes;
         this.tempScriptConfig.userName               = shell.userName;
         this.tempScriptConfig.dbUsername             = shell.dbUsername;
         this.tempScriptConfig.password               = shell.password;
@@ -464,7 +346,7 @@
         this.tempScriptConfig.timeOut                = shell.timeOut;
         this.tempScriptConfig.execTime               = shell.execTime;
         this.tempScriptConfig.dailyWarningPriv       = shell.dailyWarningPriv;
-        this.tempScriptConfig.dailyCriticalPriv      = shell.dailyCriticalPriv;
+        this.tempScriptConfig.dailyCritical_Priv     = shell.dailyCritical_Priv;
         this.tempScriptConfig.monitorWarningPriv     = shell.monitorWarningPriv;
         this.tempScriptConfig.monitorCriticalPriv    = shell.monitorCriticalPriv;
         this.tempScriptConfig.shellName              = shell.shellName;
@@ -546,3 +428,8 @@
     }
   }
 </script>
+<style scoped>
+.el-table /deep/ .cell.el-tooltip {
+      white-space: pre-wrap;
+  }
+</style>

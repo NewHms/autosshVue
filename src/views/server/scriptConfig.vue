@@ -20,20 +20,21 @@
       </el-table-column>        
       <el-table-column align="center" label="命令" prop="shellName" style="width: 60px;" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
       <el-table-column align="center" label="命令描述" width = '200' prop="shellDesc"></el-table-column>
-      <el-table-column align="center" label="命令类型" prop="type"></el-table-column>
-      <el-table-column align="center" label="适用系统" prop="systemType"></el-table-column>
-      <el-table-column align="center" label="适配正则" prop="shellUseRe"></el-table-column>
-      <el-table-column align="center" label="判断规则" prop="dailyRule"></el-table-column>
-      <el-table-column align="center" label="SUCCESS" prop="dailySuccess" width = '90'></el-table-column>
+      <el-table-column align="center" label="命令类型"   prop="type"></el-table-column>
+      <el-table-column align="center" label="适用系统"   prop="systemType"></el-table-column>
+      <el-table-column align="center" label="适配正则"   prop="shellUseRe"></el-table-column>
+      <el-table-column align="center" label="判断规则"   prop="dailyRule"></el-table-column>
+      <el-table-column align="center" label="等式阀值 =" prop="dailySuccess" width = '80'></el-table-column>
       <el-table-column align="center" label="日检阀值">
-        <el-table-column align="center" label="WAR" prop="dailyWarning"></el-table-column>
-        <el-table-column align="center" label="CRI" prop="dailyCritical"></el-table-column>
+        <el-table-column align="center" label="WAR >=" prop="dailyWarning"></el-table-column>
+        <el-table-column align="center" label="CRI <"  prop="dailyCritical"></el-table-column>
       </el-table-column>
       <el-table-column align="center" label="监控阀值">
-        <el-table-column align="center" label="WAR" prop="monitorWarning"></el-table-column>
-        <el-table-column align="center" label="CRI" prop="monitorCritical"></el-table-column>
+        <el-table-column align="center" label="WAR >=" prop="monitorWarning"></el-table-column>
+        <el-table-column align="center" label="CRI <"  prop="monitorCritical"></el-table-column>
       </el-table-column>
       <el-table-column align="center" label="执行时间" prop="execTime"></el-table-column>
+      <el-table-column align="center" label="超时时间" prop="timeOut"></el-table-column>
       <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
@@ -68,21 +69,37 @@
           <el-input type="text" v-model="tempScriptConfig.shellName"> 
           </el-input>
         </el-form-item>
+        <el-form-item label="关联参数" required label-width="150px">
+          <el-select v-model="tempScriptConfig.withColumns"  placeholder="请选择" style='width: 255px;' multiple> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for ="item in allColumns"
+              :key  ="item.columnId"
+              :label="item.columnName"
+              :value="item.columnName">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="命令描述" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.shellDesc"> 
           </el-input>
         </el-form-item>
         <el-form-item label="命令类型" required label-width="150px">
-          <el-input type="text" v-model="tempScriptConfig.type"> 
-          </el-input>
+          <el-select v-model="tempScriptConfig.type" placeholder="请选择" style='width: 255px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in allShell"
+              :key="item.shellId"
+              :label="item.shellType"
+              :value="item.shellType">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="适用系统" required label-width="150px">
-          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" style='width: 255px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+          <el-select v-model="tempScriptConfig.systemType" placeholder="请选择" style='width: 255px;'> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
-              v-for="item in alltype"
-              :key="item.serverId"
-              :label="item.serverType"
-              :value="item.serverType">
+              v-for="item in allVersion"
+              :key="item.versionId"
+              :label="item.versionType"
+              :value="item.versionType">
             </el-option>
           </el-select>
         </el-form-item>
@@ -154,8 +171,9 @@
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
-        alltype  : [],
-        allValue : [],
+        allVersion : '',
+        allShell   : '',
+        allColumns : [],
         // sysVersion: [{
         //   value:'0',
         //   lable:'MySQL'
@@ -192,7 +210,8 @@
           monitorCritical : '',  
           execTime        : '',
           timeOut         : '',
-          systemType      : ''
+          systemType      : '',
+          withColumns     : []
         },
         
       }
@@ -201,7 +220,9 @@
     created() {
       this.getList();
       if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
-        this.getAllServerType();
+        this.getAllVersion();
+        this.getAllShellType();
+        this.getAllColumns();
       }
     },
     computed: {
@@ -210,13 +231,31 @@
       ])
     },
     methods: {
-      getAllServerType() {
+      getAllShellType() {
         debugger
         this.api({
-          url: "/scriptConfig/getAllServerType",
+          url: "/scriptConfig/getAllShellType",
           method: "get"
         }).then(data => {
-          this.alltype = data.list;
+          this.allShell = data.list;
+        })
+      },
+      getAllVersion() {
+        debugger
+        this.api({
+          url: "/scriptConfig/getAllVersionType",
+          method: "get"
+        }).then(data => {
+          this.allVersion = data.list;
+        })
+      },
+      getAllColumns() {
+        debugger
+        this.api({
+          url: "/scriptConfig/getAllColumns",
+          method: "get"
+        }).then(data => {
+          this.allColumns = data.list;
         })
       },
       getList() {
@@ -269,16 +308,29 @@
         this.tempScriptConfig.execTime        =  "";
         this.tempScriptConfig.timeOut         =  "";
         this.tempScriptConfig.systemType      =  "";  
+        this.tempScriptConfig.withColumns     =  [];  
         this.tempScriptConfig.maxCode         = shell.maxCode;;
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       },
       showUpdate($index) {
         debugger
-        let shell = this.list[$index];
+        let shell            = this.list[$index];
+        let withColumns      = shell.withColumns;
+        if (withColumns != undefined){
+          var arrStringColumns = new Array();
+          //以and分割 将类型存储数组中
+          for(var oldType in withColumns.split(",")){
+            // vue是数组类型是用push赋值
+            arrStringColumns.push(withColumns.split(",")[oldType]+'');
+          }
+        }else{
+          arrStringColumns = ""
+        }
         this.tempScriptConfig.type            =  shell.type;  
         this.tempScriptConfig.shellName       =  shell.shellName;
         this.tempScriptConfig.shellDesc       =  shell.shellDesc; 
+        this.tempScriptConfig.withColumns     =  [];
         this.tempScriptConfig.code            =  shell.code;
         this.tempScriptConfig.dailyRule       =  shell.dailyRule;
         this.tempScriptConfig.shellUseRe      =  shell.shellUseRe;
@@ -290,6 +342,7 @@
         this.tempScriptConfig.execTime        =  shell.execTime;
         this.tempScriptConfig.timeOut         =  shell.timeOut;
         this.tempScriptConfig.systemType      =  shell.systemType;
+        this.tempScriptConfig.withColumns     =  arrStringColumns;
         this.tempScriptConfig.deleteStatus    = '1';
         this.tempScriptConfig.id              = shell.id;
         this.dialogStatus                     = "update"
@@ -309,6 +362,7 @@
         })
       },
       updateScript() {
+        debugger
         //修改用户信息
         let _vue = this;
         this.api({
