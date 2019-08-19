@@ -129,7 +129,14 @@ export const asyncRouterMap = [
         meta: {title: '日志', icon: 'tree'}, 
         menu: 'daliy_log'
       },
-
+      {
+        path: 'alarm', 
+        name: '告警记录', 
+        component: _import('server/alarm'), 
+        meta: {title: '告警记录', icon: 'tree'}, 
+        menu: 'daliy_log'
+      },
+      
     ]
   },
   {path: '*', redirect: '/404', hidden: true}

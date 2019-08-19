@@ -8,7 +8,6 @@
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="text" prefix-icon="el-icon-search" @click="flushScheduler" style="float:right">刷新定时器</el-button>
         </el-form-item>
-
         <el-form-item>
           <el-checkbox-group v-model="allAppServer" @change="handleCheckedCitiesChange">
             <el-checkbox v-for="item in allApplicaServer" 
@@ -27,32 +26,48 @@
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
-      </el-table-column>
-        <el-table-column align="center"   label="服务器"         prop="host" width="130" sortable></el-table-column>
+      </el-table-column>  
+        <el-table-column align="center"   label="服务器信息" width="215">
+          <template slot-scope="scope">
+            <dt>服务器地址: {{ scope.row.host }}</dt>
+            <dt>实例名:     {{ scope.row.serviceName }}</dt> 
+            <dt>服务器类型: {{ scope.row.systemType }}</dt>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column align="center"   label="服务器"         prop="host" width="75"></el-table-column>
         <el-table-column align="center"   label="实例名"         prop="serviceName" width="75"></el-table-column>
-        <el-table-column align="center"   label="服务器类型"     prop="systemType" width="70"></el-table-column>
-        <el-table-column align="center"   label="命令"           prop="shellName" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+        <el-table-column align="center"   label="服务器类型"      prop="systemType" width="70"></el-table-column> -->
+        <el-table-column align="center"   label="命令信息" width="260" :show-overflow-tooltip="true" @contextmenu="showMenu">
+          <template slot-scope="scope">
+            <dt>命令:     {{ scope.row.shellName }}</dt>
+            <dt>命令描述: {{ scope.row.shellDesc }}</dt> 
+            <dt>适用版本: {{ scope.row.systemVersion }}</dt>
+          </template>
+        </el-table-column>
+        <!-- <el-table-column align="center"   label="命令"           prop="shellName" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
         <el-table-column align="center"   label="命令描述"       prop="shellDesc"  width="170" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-        <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="100"></el-table-column>
+        <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="100"></el-table-column> -->
         <el-table-column align="center"   label="通用阀值">
           <el-table-column align="center" label="日检阀值">
-            <el-table-column align="center" label="WAR" prop="dailyWarning"  width="60"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="dailyCritical" width="50"></el-table-column>
+            <el-table-column align="center" label="WAR" prop="dailyWarning"  width="70"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="dailyCritical" width="70"></el-table-column>
           </el-table-column>
           <el-table-column align="center"   label="监控阀值">
-            <el-table-column align="center" label="WAR" prop="monitorWarning"  width="60"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="monitorCritical" width="50"></el-table-column>
+            <el-table-column align="center" label="WAR" prop="monitorWarning"  width="70"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="monitorCritical" width="70"></el-table-column>
           </el-table-column>
         </el-table-column>
         <el-table-column align="center"     label="私有阀值">
           <el-table-column align="center"   label="日检阀值">
-            <el-table-column align="center" label="WAR" prop="dailyWarningPriv"  width="60"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="dailyCriticalPriv" width="50"></el-table-column>
+            <el-table-column align="center" label="WAR" prop="dailyWarningPriv"  width="70"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="dailyCriticalPriv" width="70"></el-table-column>
           </el-table-column>
           <el-table-column align="center"   label="监控阀值">
-            <el-table-column align="center" label="WAR" prop="monitorWarningPriv"  width="60"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="monitorCriticalPriv" width="50"></el-table-column>
+            <el-table-column align="center" label="WAR" prop="monitorWarningPriv"  width="70"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="monitorCriticalPriv" width="70"></el-table-column>
           </el-table-column>
+        </el-table-column>
+        <el-table-column align="center" label="是否执行"     prop="crontab" width="60" :formatter = "stateFormat">
         </el-table-column>
         <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
         <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
@@ -185,6 +200,15 @@
           <el-input type="text" v-if="dialogStatus=='create'"   disabled="true" v-model="tempScriptConfig.timeOut" ></el-input>
           <el-input type="text" v-else v-model="tempScriptConfig.timeOut" ></el-input>
         </el-form-item>
+        <el-form-item label="自动启动"  label-width="120px">
+          <el-switch
+            v-model="tempScriptConfig.crontab"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-value="0"
+            inactive-value="1">
+          </el-switch>
+        </el-form-item>
         <el-form-item label="执行时间" label-width="120px" >
           <el-input v-model="tempScriptConfig.execTime" v-if="dialogStatus=='create'" >                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
@@ -197,6 +221,7 @@
         </el-form-item>
         <cron v-if="showCronBox" v-model="tempScriptConfig.execTime"  style="width:640px;color:#2c3e50;margin-left:-35px;"></cron> 
       </el-form>
+
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false;alltype=[]">取 消</el-button>
         <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
@@ -231,13 +256,13 @@
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
-        // crontab: [{
-        //   value:'0',
-        //   lable:'OFF'
-        // },{
-        //   value:'1',
-        //   lable:'ON'
-        // }],
+        crontab: [{
+          value:'0',
+          lable:'ON'
+        },{
+          value:'1',
+          lable:'OFF'
+        }],
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
@@ -245,7 +270,9 @@
           create: '新增配置'
         },
         tempScriptConfig: {
+          id                     : '',
           host                   : '',
+          allInfo                : '',
           serviceName            : '',
           post                   : '',
           applicationServer      : '',
@@ -264,11 +291,12 @@
           timeOut                : '',
           execTime               : '',
           dailyWarningPriv       : '',
-          dailyCriticalPriv     : '',
+          dailyCriticalPriv      : '',
           monitorWarningPriv     : '',
           monitorCriticalPriv    : '',
           shellName              : '',
           shellDesc              : '',
+          crontab                : '',
           dailyCritical          : '',
           dailySuccess           : '',
           dailyWarning           : '',
@@ -316,14 +344,14 @@
       //   })
       // },
       // 列字段翻译 ZS
-      // stateFormat(row, column) {
-      //   console.log(row.crontab)
-      //   if (row.crontab === '1') {
-      //     return '是'
-      //   } else if (row.crontab === '0') {
-      //     return '否'
-      //   } 
-      // },
+      stateFormat(row, column) {
+        console.log(row.crontab)
+        if (row.crontab === '0') {
+          return '是'
+        } else if (row.crontab === '1') {
+          return '否'
+        } 
+      },
       getAllVersionType() {
         this.api({
           url: "/scriptConfig/getAllVersionType",
@@ -449,10 +477,12 @@
       showUpdate($index) {
         debugger
         let shell = this.list[$index];
+        this.tempScriptConfig.id                     = shell.id;
         this.tempScriptConfig.host                   = shell.host;
         this.tempScriptConfig.serviceName            = shell.serviceName;
         this.tempScriptConfig.post                   = shell.post;
         this.tempScriptConfig.applicationServer      = shell.applicationServer;
+        this.tempScriptConfig.crontab                = shell.crontab;
         this.tempScriptConfig.creationDate           = shell.creationDate;
         this.tempScriptConfig.systemType             = shell.systemType;
         this.tempScriptConfig.systemVersion          = shell.systemVersion;
@@ -502,7 +532,7 @@
         let _vue = this;
         
         this.api({
-          url: "/serverConfig/updateServer",
+          url: "/serverConfig/updateRuleSetting",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
@@ -546,3 +576,6 @@
     }
   }
 </script>
+<style>
+ dt {text-align:left;  margin-left:5px;}
+</style>
