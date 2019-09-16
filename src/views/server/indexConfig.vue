@@ -42,6 +42,7 @@
             <dt>命令:     {{ scope.row.shellName }}</dt>
             <dt>命令描述: {{ scope.row.shellDesc }}</dt> 
             <dt>适用版本: {{ scope.row.systemVersion }}</dt>
+            <dt>输入参数: {{ scope.row.inputParam }}</dt>
           </template>
         </el-table-column>
         <!-- <el-table-column align="center"   label="命令"           prop="shellName" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
@@ -49,26 +50,40 @@
         <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="100"></el-table-column> -->
         <el-table-column align="center"   label="通用阀值">
           <el-table-column align="center" label="日检阀值">
-            <el-table-column align="center" label="WAR" prop="dailyWarning"  width="70"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="dailyCritical" width="70"></el-table-column>
+            <el-table-column align="center" label="WAR" prop="dailyWarning"  width="60"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="dailyCritical" width="60"></el-table-column>
           </el-table-column>
           <el-table-column align="center"   label="监控阀值">
-            <el-table-column align="center" label="WAR" prop="monitorWarning"  width="70"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="monitorCritical" width="70"></el-table-column>
+            <el-table-column align="center" label="WAR" prop="monitorWarning"  width="60"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="monitorCritical" width="60"></el-table-column>
           </el-table-column>
         </el-table-column>
         <el-table-column align="center"     label="私有阀值">
           <el-table-column align="center"   label="日检阀值">
-            <el-table-column align="center" label="WAR" prop="dailyWarningPriv"  width="70"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="dailyCriticalPriv" width="70"></el-table-column>
+            <el-table-column align="center" label="WAR" prop="dailyWarningPriv"  width="60"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="dailyCriticalPriv" width="60"></el-table-column>
           </el-table-column>
           <el-table-column align="center"   label="监控阀值">
-            <el-table-column align="center" label="WAR" prop="monitorWarningPriv"  width="70"></el-table-column>
-            <el-table-column align="center" label="CRI" prop="monitorCriticalPriv" width="70"></el-table-column>
+            <el-table-column align="center" label="WAR" prop="monitorWarningPriv"  width="60"></el-table-column>
+            <el-table-column align="center" label="CRI" prop="monitorCriticalPriv" width="60"></el-table-column>
           </el-table-column>
         </el-table-column>
         <el-table-column align="center" label="是否执行"     prop="crontab" width="60" :formatter = "stateFormat">
         </el-table-column>
+        <el-table-column align="center"   label="分时间段处理" width="80">
+          <template slot-scope="scope">
+            <el-switch
+              v-model="scope.row.dateRange"
+              active-color="#13ce66"
+              inactive-color="#ff4949"
+              active-value="1"
+              inactive-value="0"
+              @change="updateDateRange(scope.$index)">
+            </el-switch>
+            <el-button type="text" prefix-icon="el-icon-search" @click="goToDateRange(scope.$index)">GO
+            </el-button>
+          </template>
+        </el-table-column> 
         <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
         <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
           <template slot-scope="scope">
@@ -164,6 +179,9 @@
           <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.shellDesc" ></el-input>
           <el-input type="text" v-else disabled="true" v-model="tempScriptConfig.shellDesc" ></el-input>
         </el-form-item>
+        <el-form-item label="输入参数"  label-width="120px">
+          <el-input type="text" v-model="tempScriptConfig.inputParam" ></el-input>
+        </el-form-item>
         <el-form-item label="通用日检 WAR"  label-width="120px">
           <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.dailyWarning" ></el-input>
           <el-input type="text" v-else   disabled="true"  v-model="tempScriptConfig.dailyWarning" ></el-input>
@@ -209,6 +227,7 @@
             inactive-value="1">
           </el-switch>
         </el-form-item>
+         
         <el-form-item label="执行时间" label-width="120px" >
           <el-input v-model="tempScriptConfig.execTime" v-if="dialogStatus=='create'" >                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
@@ -303,7 +322,8 @@
           monitorCritical        : '',
           monitorWarning         : '',
           backupUrl              : '',
-          backupNum              : ''
+          backupNum              : '',
+          inputParam             : ''
         },
         
       }
@@ -351,6 +371,14 @@
         } else if (row.crontab === '1') {
           return '否'
         } 
+      },
+      goToDateRange($index) {
+        debugger
+        let _vue = this;
+        let details = _vue.list[$index];
+        this.$router.push({name: '时间范围配置', params: {host: details.host,
+                                                        serviceName : details.serviceName,
+                                                        code  : details.shellCode}})
       },
       getAllVersionType() {
         this.api({
@@ -405,7 +433,31 @@
         })
         
       },
-
+      updateDateRange($index) {
+        //修改告警开始时间
+        debugger
+        let _vue = this;
+       
+        this.api({
+          url: "/serverConfig/updateDateRange",
+          method: "post",
+          data:  this.list[$index]
+        }).then(() => {
+          let msg = "修改成功";
+          this.dialogFormVisible = false
+          if (this.userId === this.tempScriptConfig.userId) {
+            msg = '修改成功,部分信息重新登录后生效'
+          }
+          this.$message({
+            message: msg,
+            type: 'success',
+            duration: 1 * 1000,
+            onClose: () => {
+              _vue.getList();
+            }
+          })
+        })
+      }, 
       flushScheduler() {
         // debugger
         //刷新定时器
@@ -469,6 +521,7 @@
         this.tempScriptConfig.monitorWarning         = "";
         this.tempScriptConfig.backupUrl              = "";
         this.tempScriptConfig.backupNum              = "";
+        this.tempScriptConfig.inputParam             = "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       
@@ -506,6 +559,7 @@
         this.tempScriptConfig.monitorWarning         = shell.monitorWarning;
         this.tempScriptConfig.backupUrl              = shell.backupUrl;
         this.tempScriptConfig.backupNum              = shell.backupNum;
+        this.tempScriptConfig.inputParam             = shell.inputParam;
         this.tempScriptConfig.deleteStatus          = '1';
         this.tempScriptConfig.id                    = shell.id;
         this.dialogStatus                           = "update"

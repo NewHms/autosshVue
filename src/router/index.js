@@ -67,19 +67,35 @@ export const asyncRouterMap = [
     ]
   },
   {
+    path: '/mail',
+    component: Layout,
+    redirect: '/server/',
+    name: '',
+    meta: {title: '用户权限', icon: 'table'},
+    children: [
+      {
+        path: '', 
+        name: '告警组配置', 
+        component: _import('server/sendMailGroup'), 
+        meta: {title: '告警组配置', icon: 'tree'}, 
+        menu: 'mail_group'
+      },
+      {
+        path: 'send_mail',
+        name: '告警联系人配置',
+        component: _import('server/sendMailUser'),
+        meta: {title: '告警联系人配置', icon: 'tree'},
+        menu: 'send_mail'
+      },
+    ]
+  },
+  {
     path: '/server',
     component: Layout,
     redirect: '/server/',
     name: '',
     meta: {title: '数据库日检', icon: 'table'},
     children: [  
-      // {
-      //   path: '', 
-      //   name: 'Agent信息', 
-      //   component: _import('server/details'), 
-      //   meta: {title: 'Agent信息', icon: 'tree'}, 
-      //   menu: 'details'
-      // },
       {
         path: '', 
         name: '检查脚本配置', 
@@ -99,6 +115,13 @@ export const asyncRouterMap = [
         name: '私有阀值配置', 
         component: _import('server/indexConfig'), 
         meta: {title: '私有阀值配置', icon: 'tree'}, 
+        menu: 'rule_setting'
+      }, 
+      {
+        path: 'datarange_setting', 
+        name: '时间范围配置', 
+        component: _import('server/dateRangeConfig'), 
+        meta: {title: '时间范围配置', icon: 'tree'}, 
         menu: 'rule_setting'
       }, 
       {

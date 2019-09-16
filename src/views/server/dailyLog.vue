@@ -95,6 +95,7 @@
 </template>
 <script>
   import {mapGetters} from 'vuex'
+  import {formatDate} from '@/utils/commonUtil.js'
   import cron from './cron'
   export default {
     data() {
@@ -111,7 +112,7 @@
         listQuery: {
           pageNum   : 1,//页码
           pageRow   : 50,//每页条数
-          dataTime  : new Date(),
+          dataTime  : formatDate(new Date(),'yyyy-MM-dd')
           //execStatus : '',
         },
         listQuery_monitor: {
@@ -273,6 +274,7 @@
         this.listLoading = true;
         this.listQuery_fail.dataTime     =  this.listQuery.dataTime
         this.listQuery_fail.IP           =  this.listQuery.IP
+        this.listQuery_fail.location     =  this.listQuery.location
         this.dialogStatus                = "fail"
         var allValue = '';
         for(var oldType in this.tempScriptConfig.shellDesc){
@@ -298,6 +300,7 @@
         this.listLoading = true;
         this.listQuery_warning.dataTime     =  this.listQuery.dataTime
         this.listQuery_warning.IP           =  this.listQuery.IP
+        this.listQuery_warning.location     =  this.listQuery.location
         this.dialogStatus                   = "warning"
         var allValue = '';
         for(var oldType in this.tempScriptConfig.shellDesc){
@@ -323,6 +326,7 @@
         this.listLoading = true;
         this.listQuery_critical.dataTime     =  this.listQuery.dataTime
         this.listQuery_critical.IP           =  this.listQuery.IP
+        this.listQuery_critical.location     =  this.listQuery.location
         this.dialogStatus                    = "critical"
         var allValue = '';
         for(var oldType in this.tempScriptConfig.shellDesc){
@@ -386,6 +390,7 @@
         this.listLoading = true;
         this.listQuery_success.dataTime     =  this.listQuery.dataTime
         this.listQuery_success.IP           =  this.listQuery.IP
+        this.listQuery_success.location     =  this.listQuery.location
         this.dialogStatus                   = "success"
         var allValue = '';
         for(var oldType in this.tempScriptConfig.shellDesc){

@@ -2,7 +2,7 @@
   <div class="app-container">    <div class="filter-container">
       <el-form>
         <el-form-item>
-          <el-input v-model="listQuery.ip" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>      
+          <el-input v-model="listQuery.IP" placeholder="请输入IP地址" style='width: 300px;' type="text" clearable></el-input>      
           <el-date-picker
              v-model="listQuery.dataTime"
              type="date"
@@ -31,7 +31,7 @@
             </el-table-column>   -->
             <el-table-column align="center" label="ip"      prop="ip" width="130"></el-table-column> 
             <el-table-column align="center" label="实例名"   prop="serviceName" width="80"> </el-table-column>
-            <el-table-column align="center" label="code"    prop="code"  width="70">         </el-table-column> 
+            <el-table-column align="center" label="code"    prop="code"  width="70">        </el-table-column> 
             <el-table-column align="center" label="采集时间"  width="120">
               <template slot-scope="scope">
                 <dt>{{ scope.row.execTimeDay  }}</dt>
@@ -88,19 +88,21 @@
 
 <script>
   import {mapGetters} from 'vuex'
+  import {formatDate} from '@/utils/commonUtil.js'
   export default {
     data() {
       return {
         totalCount: 0, //分页组件--数据总条数
         dataTime    : '',
         list        : [],//表格的数据
+        list_test        : '',
         allLocation : '',
         listLoading: false,//数据加载等待动画     
         listQuery: {
           pageNum: 1,//页码
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
-          dataTime  : new Date()
+          dataTime  : formatDate(new Date(),'yyyy-MM-dd')
           //execStatus : '',
         },
 
@@ -108,7 +110,7 @@
           pageNum: 1,//页码
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
-          dataTime  : new Date()
+          dataTime  : formatDate(new Date(),'yyyy-MM-dd')
           //execStatus : '',
         },
         
@@ -200,17 +202,23 @@
           })
         })
       },  
-      async getInnerAlarm(data,expandedRows) {
+      getInnerAlarm(data,expandedRows) {
         debugger
         //查询列表
-        this.listLoading = true;
-        data.dataTime = this.listQuery.dataTime
-        data.pageNum  = this.listData.pageNum
-        data.pageRow  = this.listData.pageRow
+        //alert(data)
+        this.listLoading = true; 
+        if(data != undefined){
+            this.list_test = data
+        } 
+        
+        this.list_test.dataTime = this.listQuery.dataTime
+        this.list_test.pageNum  = this.listData.pageNum
+        this.list_test.pageRow  = this.listData.pageRow
+        
         this.api({ 
           url: "/alarmConfig/getAllInnerAlarm",
           method: "get",
-          params: data
+          params: this.list_test
 
         }).then(data => {
           this.listLoading = false;
@@ -245,10 +253,12 @@
         this.handleInnerFilter();
       },
       handleInnerCurrentChange(val) {
+        debugger
         this.listData.pageNum = val
         this.getInnerAlarm();         
       },
       handleInnerFilter() {
+        debugger
         //查询事件       
         this.listData.pageNum = val
         this.getInnerAlarm();   
@@ -267,20 +277,6 @@
   }
 </script>
 
-<style>
-  .demo-table-expand {
-    font-size: 0;
-  }
-  .demo-table-expand label {
-    width: 90px;
-    color: #99a9bf;
-  }
-  .demo-table-expand .el-form-item {
-    margin-right: 0;
-    margin-bottom: 0;
-    width: 50%;
-  }
-</style>
 <style>
   .demo-table-expand {
     font-size: 0;

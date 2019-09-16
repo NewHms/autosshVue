@@ -108,6 +108,7 @@
 </style>
 <script>
   import {mapGetters} from 'vuex'
+  import {formatDate} from '@/utils/commonUtil.js'
   export default {
     data() {
       return {
@@ -121,7 +122,7 @@
           pageNum: 1,//页码
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
-          dataTime  : new Date()
+          dataTime  : formatDate(new Date(),'yyyy-MM-dd')
           //execStatus : '',
         },
         listQuery_warning: {

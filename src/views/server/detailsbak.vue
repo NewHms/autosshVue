@@ -63,7 +63,7 @@
           <el-input type="text" v-model="tempScriptConfig.host">
           </el-input>
         </el-form-item>
-        <el-form-item label="实例名"  required  label-width="120px">
+        <el-form-item label="实例名"  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.serviceName">
           </el-input>
         </el-form-item>
@@ -91,19 +91,19 @@
           <el-input type="text" v-model="tempScriptConfig.post">
           </el-input>
         </el-form-item>
-        <el-form-item label="OS用户"  required  label-width="120px">
+        <el-form-item label="OS用户"    label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.userName">
           </el-input>
         </el-form-item>
-        <el-form-item label="OS密码"  required  label-width="120px">
+        <el-form-item label="OS密码"    label-width="120px">
           <el-input type="password" v-model="tempScriptConfig.password">
           </el-input>
         </el-form-item>
-        <el-form-item label="DB用户"  required  label-width="120px">
+        <el-form-item label="DB用户"    label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.dbUsername">
           </el-input>
         </el-form-item>
-        <el-form-item label="DB密码"  required  label-width="120px">
+        <el-form-item label="DB密码"    label-width="120px">
           <el-input type="password" v-model="tempScriptConfig.dbPassword">
           </el-input>
         </el-form-item>
@@ -175,6 +175,7 @@
         tempScriptConfig: {
           host                   : '',
           serviceName            : '',
+          dateRange              : '',
           post                   : '',
           applicationServer      : '',
           location               : '',
@@ -212,8 +213,8 @@
         let _vue = this;
         let details = _vue.list[$index];
         this.$router.push({name: '私有阀值配置', params: {host: details.host,
-                                                       serviceName : details.serviceName,
-                                                       systemType  : details.systemType}})
+                                                        serviceName : details.serviceName,
+                                                        systemType  : details.systemType}})
       },
       getAllVersionType() {
         this.api({
@@ -231,6 +232,31 @@
           this.allLocation = data.list;
         })
       },
+      updateDateRange($index) {
+        //修改告警开始时间
+        debugger
+        let _vue = this;
+       
+        this.api({
+          url: "/serverConfig/updateDateRange",
+          method: "post",
+          data:  this.list[$index]
+        }).then(() => {
+          let msg = "修改成功";
+          this.dialogFormVisible = false
+          if (this.userId === this.tempScriptConfig.userId) {
+            msg = '修改成功,部分信息重新登录后生效'
+          }
+          this.$message({
+            message: msg,
+            type: 'success',
+            duration: 1 * 1000,
+            onClose: () => {
+              _vue.getList();
+            }
+          })
+        })
+      }, 
       getAllServer() {
         this.api({
           url: "/scriptConfig/getAllServer",
