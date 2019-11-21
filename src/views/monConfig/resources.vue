@@ -23,7 +23,7 @@
       <el-table-column align="center" label="code"   prop="code"></el-table-column>
       <el-table-column align="center" label="值"     prop="values"></el-table-column>
       <el-table-column align="center" label="说明"    prop="valuesDesc"></el-table-column>
-      <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
+      <el-table-column align="center" width="70" label="管理" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
           <el-button type="text" icon="el-icon-delete" 

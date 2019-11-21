@@ -20,8 +20,6 @@
       </el-table-column>
         <el-table-column align="center" label="服务器"        prop="host" sortable></el-table-column>
         <el-table-column align="center" label="端口"          prop="post"></el-table-column>
-        <el-table-column align="center" label="备份路径"      prop="backupUrl"></el-table-column>
-        <el-table-column align="center" label="备份个数"      prop="backupNum"></el-table-column>
         <el-table-column align="center" label="数据库类型"    prop="systemType" sortable></el-table-column>
         <el-table-column align="center" label="实例名"        prop="serviceName"></el-table-column>
         <el-table-column align="center" label="监控服务器"    prop="applicationServer"></el-table-column>
@@ -66,9 +64,7 @@
           host                   : '',
           serviceName            : '',
           post                   : '',
-          applicationServer      : '',
-          backupUrl              : '',
-          backupNum              : '',
+          applicationServer      : '',        
           userName               : '',
           dbUsername             : '',
           password               : '',

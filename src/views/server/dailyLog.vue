@@ -6,9 +6,9 @@
           <el-select v-model="listQuery.logType" placeholder="日志类型" label-width="80px" style='width: 110px;' clearable> 
             <el-option
               v-for="item in alltype"
-              :key="item.logId"
-              :label="item.logType"
-              :value="item.logType"
+              :key="item.alarmId"
+              :label="item.alarmType"
+              :value="item.alarmType"
               visible-change>
             </el-option>
           </el-select>
@@ -67,7 +67,7 @@
       <el-table-column   align="center" width="150"    label="命令描述"    prop="shellDesc"    :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
       <el-table-column   align="center" width="400"    label="执行结果"    prop="execResult"   :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
       <el-table-column   align="center" width="90"     label="执行状态"    prop="resultStatus" :cell-class-name="checkDel"  sortable></el-table-column>
-      <el-table-column   align="center"                label="执行时间">
+      <el-table-column   align="center"                label="执行频率">
         <el-table-column align="center" width="100"    label="年-月-日"    prop="execTimeDay"  sortable></el-table-column>
         <el-table-column align="center" width="100"    label="时-分-秒"    prop="execTimeHour" sortable></el-table-column>
       </el-table-column>
@@ -96,7 +96,7 @@
 <script>
   import {mapGetters} from 'vuex'
   import {formatDate} from '@/utils/commonUtil.js'
-  import cron from './cron'
+  //import cron from './cron'
   export default {
     data() {
       //datetime+8小时
@@ -220,6 +220,7 @@
         }
       },
       getAllLogType() {
+        debugger
         this.api({
           url: "/logConfig/getAllLogType",
           method: "get"
@@ -247,7 +248,7 @@
       },
 
       getList() {
-        debugger
+        //debugger
         //查询列表
         this.listLoading = true;
         var allValue = '';

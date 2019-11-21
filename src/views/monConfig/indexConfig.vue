@@ -6,7 +6,6 @@
         <el-form-item>
           <el-input v-model="listQuery.host" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-          <el-button type="text" prefix-icon="el-icon-search" @click="flushScheduler" style="float:right">刷新定时器</el-button>
         </el-form-item>
         <el-form-item>
           <el-checkbox-group v-model="allAppServer" @change="handleCheckedCitiesChange">
@@ -78,14 +77,15 @@
               inactive-color="#ff4949"
               active-value="1"
               inactive-value="0"
-              @change="updateDateRange(scope.$index)">
+              @change="updateDateRange(scope.$index)"
+            >
             </el-switch>
             <el-button type="text" prefix-icon="el-icon-search" @click="goToDateRange(scope.$index)">GO
             </el-button>
           </template>
         </el-table-column> 
-        <el-table-column align="center" label="执行时间"     prop="execTime"></el-table-column>
-        <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
+        <el-table-column align="center" label="执行频率"     prop="execTime"></el-table-column>
+        <el-table-column align="center" width="70" label="管理" v-if="hasPerm('scriptConfig:update')">
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
             <el-button type="text" icon="el-icon-delete" 
@@ -141,14 +141,6 @@
         </el-form-item>
         <el-form-item label="DB密码"  required  label-width="120px">
           <el-input type="password" v-model="tempScriptConfig.dbPassword" disabled="true">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="备份路径"  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.backupUrl"      disabled="true">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="备份个数"  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.backupNum"      disabled="true">
           </el-input>
         </el-form-item>
         <el-form-item label="服务器类型" required label-width="120px">
@@ -228,7 +220,7 @@
           </el-switch>
         </el-form-item>
          
-        <el-form-item label="执行时间" label-width="120px" >
+        <el-form-item label="执行频率" label-width="120px" >
           <el-input v-model="tempScriptConfig.execTime" v-if="dialogStatus=='create'" >                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
             <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
@@ -321,8 +313,6 @@
           dailyWarning           : '',
           monitorCritical        : '',
           monitorWarning         : '',
-          backupUrl              : '',
-          backupNum              : '',
           inputParam             : ''
         },
         
@@ -382,7 +372,7 @@
       },
       getAllVersionType() {
         this.api({
-          url: "/scriptConfig/getAllVersionType",
+          url: "/commonsConfig/getAllVersionType",
           method: "get"
         }).then(data => {
           this.alltype = data.list;
@@ -390,7 +380,7 @@
       },
       getAllServer() {
         this.api({
-          url: "/scriptConfig/getAllServer",
+          url: "/commonsConfig/getAllServer",
           method: "get"
         }).then(data => {
           this.allServer = data.list;
@@ -398,7 +388,7 @@
       },
       getAllAppServer() {
         this.api({
-          url: "/scriptConfig/getAllAppServer",
+          url: "/commonsConfig/getAllAppServer",
           method: "get"
         }).then(data => {
           this.allApplicaServer = data.list;
@@ -457,20 +447,11 @@
             }
           })
         })
+        if(this.list[$index].dateRange == '1'){
+          this.goToDateRange($index)
+        }
+        
       }, 
-      flushScheduler() {
-        // debugger
-        //刷新定时器
-        let _vue = this;
-        this.listLoading = false;
-        this.api({
-          url: "/serverConfig/flushScheduler",
-          method: "get",
-        }).catch(() => {
-            _vue.$message.success("刷新成功")
-            _vue.getList()
-          })
-      },
 
       handleSizeChange(val) {
         //改变每页数量
@@ -519,8 +500,6 @@
         this.tempScriptConfig.dailyWarning           = "";
         this.tempScriptConfig.monitorCritical        = "";
         this.tempScriptConfig.monitorWarning         = "";
-        this.tempScriptConfig.backupUrl              = "";
-        this.tempScriptConfig.backupNum              = "";
         this.tempScriptConfig.inputParam             = "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
@@ -557,8 +536,6 @@
         this.tempScriptConfig.dailyWarning           = shell.dailyWarning;
         this.tempScriptConfig.monitorCritical        = shell.monitorCritical;
         this.tempScriptConfig.monitorWarning         = shell.monitorWarning;
-        this.tempScriptConfig.backupUrl              = shell.backupUrl;
-        this.tempScriptConfig.backupNum              = shell.backupNum;
         this.tempScriptConfig.inputParam             = shell.inputParam;
         this.tempScriptConfig.deleteStatus          = '1';
         this.tempScriptConfig.id                    = shell.id;
@@ -607,7 +584,7 @@
       },
       removeUser($index) {
         let _vue = this;
-        this.$confirm('确定删除此命令?', '提示', {
+        this.$confirm('确定删除此配置?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
           type: 'warning'

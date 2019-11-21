@@ -27,13 +27,9 @@
           <el-table-column align="center" label="OS用户名"     prop="userName" width="120"></el-table-column>
           <el-table-column align="center" label="DB用户名"     prop="dbUsername" ></el-table-column>
         </el-table-column>
-        <el-table-column align="center"   label="备份配置"  width="100">
-          <el-table-column align="center" label="路径"     prop="backupUrl" ></el-table-column>
-          <el-table-column align="center" label="个数"     prop="backupNum" ></el-table-column>
-        </el-table-column>
         <el-table-column align="center"   label="服务器类型"     prop="systemType" ></el-table-column>
         <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="160" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-        <el-table-column align="center" width="160" v-if="hasPerm('scriptConfig:update')">
+        <el-table-column align="center" width="160" label="管理" v-if="hasPerm('scriptConfig:update')">
           <template slot-scope="scope">
             <el-button type="text" prefix-icon="el-icon-search" @click="goToDetails(scope.$index)">详细信息
             </el-button>
@@ -107,14 +103,6 @@
           <el-input type="password" v-model="tempScriptConfig.dbPassword">
           </el-input>
         </el-form-item>
-        <el-form-item label="备份路径"  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.backupUrl">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="备份个数"  label-width="120px">
-          <el-input type="text" v-model="tempScriptConfig.backupNum">
-          </el-input>
-        </el-form-item>
         <el-form-item label="服务器类型" required label-width="120px">
           <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
@@ -184,9 +172,7 @@
           userName               : '',
           dbUsername             : '',
           password               : '',
-          dbPassword             : '',
-          backupUrl              : '',
-          backupNum              : ''
+          dbPassword             : ''
         },
         
       }
@@ -218,7 +204,7 @@
       },
       getAllVersionType() {
         this.api({
-          url: "/scriptConfig/getAllVersionType",
+          url: "/commonsConfig/getAllVersionType",
           method: "get"
         }).then(data => {
           this.alltype = data.list;
@@ -226,7 +212,7 @@
       },
       getAllLocation() {
         this.api({
-          url: "/scriptConfig/getAllLocation",
+          url: "/commonsConfig/getAllLocation",
           method: "get"
         }).then(data => {
           this.allLocation = data.list;
@@ -259,7 +245,7 @@
       }, 
       getAllServer() {
         this.api({
-          url: "/scriptConfig/getAllServer",
+          url: "/commonsConfig/getAllServer",
           method: "get"
         }).then(data => {
           this.allServer = data.list;
@@ -267,7 +253,7 @@
       },
       getAllAppServer() {
         this.api({
-          url: "/scriptConfig/getAllAppServer",
+          url: "/commonsConfig/getAllAppServer",
           method: "get"
         }).then(data => {
           this.allApplicaServer = data.list;
@@ -338,8 +324,6 @@
         this.tempScriptConfig.dailyWarning           = "";
         this.tempScriptConfig.monitorCritical        = "";
         this.tempScriptConfig.monitorWarning         = "";
-        this.tempScriptConfig.backupUrl              = "";
-        this.tempScriptConfig.backupNum              = "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       
@@ -350,11 +334,13 @@
         let shell = this.list[$index];
         let systemVersion  = shell.systemVersion;
         var arrStringTypes = new Array();
-        //以and分割 将类型存储数组中
-        for(var oldType in systemVersion.split(",")){
+        if(systemVersion != undefined){
+          //以and分割 将类型存储数组中
+          for(var oldType in systemVersion.split(",")){
             // vue是数组类型是用push赋值
-            arrStringTypes.push(systemVersion.split(",")[oldType]+'');
+            arrStringTypes.push(systemVersion.split(",\n")[oldType]+'');
           }
+        }
         this.tempScriptConfig.host                   = shell.host;
         this.tempScriptConfig.systemVersion          = [];
         this.tempScriptConfig.serviceName            = shell.serviceName;
@@ -382,14 +368,25 @@
         this.tempScriptConfig.dailyWarning           = shell.dailyWarning;
         this.tempScriptConfig.monitorCritical        = shell.monitorCritical;
         this.tempScriptConfig.monitorWarning         = shell.monitorWarning;
-        this.tempScriptConfig.backupUrl              = shell.backupUrl;
-        this.tempScriptConfig.backupNum              = shell.backupNum;
         this.tempScriptConfig.deleteStatus          = '1';
         this.tempScriptConfig.id                    = shell.id;
         this.dialogStatus                           = "update"
         this.dialogFormVisible                      = true
       },
-      
+
+      flushScheduler() {
+        debugger
+        //刷新定时器
+        let _vue = this;
+        this.listLoading = false;
+        this.api({
+          url: "/serverConfig/flushScheduler",
+          method: "get",
+        }).catch(() => {
+            _vue.$message.success("刷新成功")
+            _vue.getList()
+          })
+      },
       createScript() {
         debugger
         let _vue = this;
@@ -431,7 +428,7 @@
       },
       removeUser($index) {
         let _vue = this;
-        this.$confirm('确定删除此命令?', '提示', {
+        this.$confirm('确定删除此配置?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
           type: 'warning'
@@ -440,7 +437,7 @@
           //user.deleteStatus = '2';
           this.tempScriptConfig.id = script.id;
           _vue.api({
-            url: "/serverConfig/deleteServer",
+            url: "/serverConfig/deleteDetails",
             method: "post",
             data: this.tempScriptConfig
           }).then(() => {

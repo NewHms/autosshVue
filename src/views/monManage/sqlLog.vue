@@ -19,9 +19,17 @@
              placeholder="选择日期"
              value-format="yyyy-MM-dd" format="yyyy-MM-dd" style='width: 150px;'>
           </el-date-picker>
+          <el-select v-model="tempScriptConfig.resultStatus" placeholder="告警级别" label-width="80px"   multiple style='width: 300px;'  clearable> 
+            <el-option
+              v-for="item in allAlarmLevel"
+              :key="item.alarmId"
+              :label="item.alarmType"
+              :value="item.alarmType">
+            </el-option>
+          </el-select>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-          <el-button type="danger" prefix-icon="el-icon-search" @click="getList_critical">CRITICAL</el-button>
-          <el-button type="warning" prefix-icon="el-icon-search" @click="getList_warning" >WARNING</el-button>
+          <!-- <el-button type="danger" prefix-icon="el-icon-search" @click="getList_critical">CRITICAL</el-button>
+          <el-button type="warning" prefix-icon="el-icon-search" @click="getList_warning" >WARNING</el-button> -->
           
       </el-form-item>  
       </el-form>
@@ -116,6 +124,7 @@
         dataTime    : '',
         list        : [],//表格的数据
         alltype     : [],
+        allAlarmLevel : '',
         allLocation : '',
         listLoading: false,//数据加载等待动画     
         listQuery: {
@@ -125,18 +134,18 @@
           dataTime  : formatDate(new Date(),'yyyy-MM-dd')
           //execStatus : '',
         },
-        listQuery_warning: {
-           pageNum: 1,//页码
-           pageRow: 50,//每页条数,
-           resultStatus : '1_WARNING',
-          //execStatus : '',
-        },
-        listQuery_critical: {
-           pageNum: 1,//页码
-           pageRow: 50,//每页条数,
-           resultStatus : '2_CRITICAL',
-          //execStatus : '',
-        },
+        // listQuery_warning: {
+        //    pageNum: 1,//页码
+        //    pageRow: 50,//每页条数,
+        //    resultStatus : '1_WARNING',
+        //   //execStatus : '',
+        // },
+        // listQuery_critical: {
+        //    pageNum: 1,//页码
+        //    pageRow: 50,//每页条数,
+        //    resultStatus : '2_CRITICAL',
+        //   //execStatus : '',
+        // },
         tempScriptConfig: {
           dailyRule     : '',
           code          : '',
@@ -149,7 +158,8 @@
           execTimeHour  : '',
           execNum       : '',
           type          : '',
-          logType       : ''
+          logType       : '',
+          resultStatus  : '',
         },
         
       }
@@ -157,6 +167,7 @@
     },
     created() {
       this.getList();
+      this.getAlarmLevel();
       if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
         this.getAllLocation();
       }
@@ -179,7 +190,13 @@
         debugger
         //查询列表
         this.listLoading = true;
-        //this.listQuery.dataTime.setTime(dateTime.getTime() + 3600 * 1000 * 8)        
+        var allValue = '';
+        for(var oldType in this.tempScriptConfig.resultStatus){
+            // vue是数组类型是用push赋值
+            //alert(oldType + (this.tempScriptConfig.shellDesc).length -1)
+            allValue  =  allValue+this.tempScriptConfig.resultStatus[oldType]+ ',';           
+          }
+        this.listQuery.resultStatus = allValue
         this.api({ 
           url: "/logConfig/listSQL",
           method: "get",
@@ -191,50 +208,66 @@
           this.totalCount = data.totalCount;
         })
       },
-      getList_warning() {
-        //查询告警列表
-        debugger
-        this.listLoading = true;
-        this.listQuery_warning.dataTime =  this.listQuery.dataTime
-        this.listQuery_warning.IP       =  this.listQuery.IP
-        this.dialogStatus               = "warning"
-        this.api({
-          url: "/logConfig/listSQL",
-          method: "get",
-          params: this.listQuery_warning
+      // getList_warning() {
+      //   //查询告警列表
+      //   debugger
+      //   this.listLoading = true;
+      //   this.listQuery_warning.dataTime =  this.listQuery.dataTime
+      //   this.listQuery_warning.IP       =  this.listQuery.IP
+      //   this.dialogStatus               = "warning"
+      //   this.api({
+      //     url: "/logConfig/listSQL",
+      //     method: "get",
+      //     params: this.listQuery_warning
           
-        }).then(data => {
-          this.listLoading = false;
-          this.list = data.list;
-          this.totalCount = data.totalCount;
-        })
-      }, 
+      //   }).then(data => {
+      //     this.listLoading = false;
+      //     this.list = data.list;
+      //     this.totalCount = data.totalCount;
+      //   })
+      // }, 
 
       getAllLocation() {
         this.api({
-          url: "/scriptConfig/getAllLocation",
+          url: "/commonsConfig/getAllLocation",
           method: "get"
         }).then(data => {
           this.allLocation = data.list;
         })
       },
 
-      getList_critical() {
-        //查询告警列表
-        debugger
-        this.listLoading = true;
-        this.listQuery_critical.dataTime =  this.listQuery.dataTime
-        this.listQuery_critical.IP       =  this.listQuery.IP
-        this.dialogStatus                = "critical"
-        this.api({
-          url: "/logConfig/listSQL",
-          method: "get",
-          params: this.listQuery_critical
+      // getList_critical() {
+      //   //查询告警列表
+      //   debugger
+      //   this.listLoading = true;
+      //   this.listQuery_critical.dataTime =  this.listQuery.dataTime
+      //   this.listQuery_critical.IP       =  this.listQuery.IP
+      //   this.dialogStatus                = "critical"
+      //   this.api({
+      //     url: "/logConfig/listSQL",
+      //     method: "get",
+      //     params: this.listQuery_critical
           
+      //   }).then(data => {
+      //     this.listLoading = false;
+      //     this.list = data.list;
+      //     this.totalCount = data.totalCount;
+      //   })
+      // },
+
+      getAlarmLevel() {
+        //debugger
+        //查询列表
+        this.listLoading = true;
+        //parseTime(this.listQuery.dataTime)
+        this.api({ 
+          url: "/commonsConfig/getAllAlarmLevel",
+          method: "get",
+          params: this.listQuery
+
         }).then(data => {
-          this.listLoading = false;
-          this.list = data.list;
-          this.totalCount = data.totalCount;
+          this.listLoading   = false;
+          this.allAlarmLevel = data.list;
         })
       },
       handleSizeChange(val) {

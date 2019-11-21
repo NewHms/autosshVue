@@ -4,7 +4,7 @@
       <el-form>
  
         <el-form-item>
-          <el-input v-model="listQuery.ip" placeholder="请输入IP" style='width: 300px;' type="text" clearable></el-input>
+          <el-input v-model="listQuery.ip" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加 </el-button>
         </el-form-item> 
@@ -27,13 +27,14 @@
         <el-table-column align="center" label="WAR >=" prop="rangeWarning"  width="100"></el-table-column>
         <el-table-column align="center" label="CRI <"  prop="rangeCritical" width="100"></el-table-column>
       </el-table-column>
-      <el-table-column align="center"     label="时间范围"    prop="dateRange" width="380">
+      <el-table-column align="center"     label="时间范围"       prop="dateRange">   </el-table-column>
+      <!-- <el-table-column align="center"     label="时间范围"    prop="dateRange" width="380">
         <template  slot-scope="timeScope">
           <el-time-picker
             is-range
-            v-model     = "timeScope.row.dateRange"
-            value-format="HH:mm" 
-            format      ="HH:mm"
+            v-model      = "timeScope.row.dateRange"
+            value-format ="HH:mm" 
+            format       ="HH:mm"
             range-separator  =" -- "
             start-placeholder="开始时间"
             end-placeholder  ="结束时间"
@@ -42,9 +43,9 @@
             @change="updateRangeTime(timeScope.$index)">
           </el-time-picker>
         </template>  
-      </el-table-column>
-      <el-table-column align="center"     label="执行时间"       prop="execTime">   </el-table-column>
-      <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
+      </el-table-column> -->
+      <el-table-column align="center"     label="执行频率"       prop="execTime">   </el-table-column>
+      <el-table-column align="center" width="70" label="管理" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
           <el-button type="text" icon="el-icon-delete" 
@@ -67,16 +68,58 @@
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 400px; margin-left:50px;'>
         <el-form-item label="IP" required label-width="150px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.ip" ></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.ip" ></el-input>
+          <el-select v-model="tempScriptConfig.ip" v-if="dialogStatus=='update'"   disabled="true" placeholder="请选择"  style='width: 250px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in allRangeServer"
+              :key="item.id"
+              :label="item.host"
+              :value="item.host">
+            </el-option>
+          </el-select>
+          <el-select v-model="tempScriptConfig.ip" v-else placeholder="请选择"  style='width: 250px;' @change="selectFn($event)"> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in allRangeServer"
+              :key="item.id"
+              :label="item.host"
+              :value="item.host">
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="实例名" required label-width="150px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.serviceName" ></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.serviceName" ></el-input>
+        <el-form-item label="实例名" label-width="150px">
+          <el-select v-model="tempScriptConfig.serviceName" v-if="dialogStatus=='update'"   disabled="true" placeholder="请选择"  style='width: 250px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in selectServiceinfo"
+              :key="item.id"
+              :label="item.serviceName"
+              :value="item.serviceName">
+            </el-option>
+          </el-select>
+          <el-select v-model="tempScriptConfig.serviceName" v-else placeholder="请选择"  @change="selectCode($event)" style='width: 250px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in selectServiceinfo"
+              :key="item.id"
+              :label="item.serviceName"
+              :value="item.serviceName">
+            </el-option>
+          </el-select>
         </el-form-item>
-        <el-form-item label="CODE"  label-width="150px">
-          <el-input type="text" v-if="dialogStatus=='update'"   disabled="true" v-model="tempScriptConfig.code" ></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.code" ></el-input>
+        <el-form-item label="命令描述"  label-width="150px">
+          <el-select v-model="tempScriptConfig.shellDesc" v-if="dialogStatus=='update'"   disabled="true" placeholder="请选择"  style='width: 250px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in selectServerCode"
+              :key="item.id"
+              :label="item.shellDesc"
+              :value="item.shellDesc">
+            </el-option>
+          </el-select>
+          <el-select v-model="tempScriptConfig.shellDesc" v-else placeholder="请选择"   style='width: 250px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in selectServerCode"
+              :key="item.id"
+              :label="item.shellDesc"
+              :value="item.shellDesc">
+            </el-option>
+          </el-select>
         </el-form-item>        
         <el-form-item label="WARNING 阀值"  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.rangeWarning">
@@ -86,27 +129,37 @@
           <el-input type="text" v-model="tempScriptConfig.rangeCritical">
           </el-input>
         </el-form-item>
-        <el-form-item label="开始时间"  label-width="150px">
-          <el-time-picker
+        <el-form-item label="开始时间"  required label-width="150px">
+         <el-time-select
             v-model     = "tempScriptConfig.dateRangeStart"
+            :picker-options="{
+               start: '00:00',
+               step: '00:10',
+               end : '24:00'
+            }"
             value-format="HH:mm" 
             format      ="HH:mm"
             start-placeholder="开始时间"
-            placeholder      ="选择开始时间"
+            placeholder      ="选开始时间"
             style            ='width: 250px;'>
-          </el-time-picker>
+         </el-time-select>
         </el-form-item>
         <el-form-item label="结束时间" required label-width="150px">
-         <el-time-picker
+         <el-time-select
             v-model     = "tempScriptConfig.dateRangeEnd"
+            :picker-options="{
+               minTime : tempScriptConfig.dateRangeStart,
+               step: '00:10',
+               end : '24:00'
+            }"
             value-format="HH:mm" 
             format      ="HH:mm"
             start-placeholder="结束时间"
             placeholder      ="选结束择时间"
             style            ='width: 250px;'>
-          </el-time-picker>
+          </el-time-select>
         </el-form-item>
-        <el-form-item label="执行时间" label-width="150px" >
+        <el-form-item label="执行频率" required label-width="150px" >
           <el-input v-model="tempScriptConfig.execTime" >                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
             <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
@@ -127,7 +180,6 @@
 <script>
   import {mapGetters} from 'vuex'
   import cron from './cron'
-     
   export default {
     components: {
           cron
@@ -142,12 +194,17 @@
           pageNum: 1,//页码
           pageRow: 50,//每页条数
         },
+        listQuery_get: {
+          pageNum: 1,//页码
+          pageRow: 50,//每页条数
+        },
         dateRange : '',
+        allRangeServer : '',
         dialogStatus: 'create',
         dialogFormVisible: false,
         textMap: {
-          update: '编辑脚本',
-          create: '新建脚本'
+          update: '编辑配置',
+          create: '新建配置'
         },
         tempScriptConfig: {
           shellDesc      : '',
@@ -167,6 +224,7 @@
     },
     created() {
       this.getList();
+      this.getAllRangeServer();
     },
     computed: {
       ...mapGetters([
@@ -200,6 +258,43 @@
           this.totalCount = data.totalCount;
         })
       },
+      getAllRangeServer() {
+        this.api({
+          url: "/dateRangeConfig/getRangeServer",
+          method: "get"
+        }).then(data => {
+          this.allRangeServer = data.list;
+        })
+      },
+      selectFn(e){
+        debugger
+        //查询列表
+        this.listLoading    = true;
+        this.listQuery_get.IP   = e;
+        this.api({ 
+          url: "/dateRangeConfig/getServerName",
+          method: "get",
+          params: this.listQuery_get
+        }).then(data => {
+          this.selectServiceinfo = data.list;
+          this.listLoading      = false;
+        })
+      },
+      selectCode(e){
+        debugger
+        //查询列表
+        this.listLoading             = true;
+        this.listQuery_get.serviceName   = e;
+        this.api({ 
+          url: "/dateRangeConfig/getServerCode",
+          method: "get",
+          params: this.listQuery_get
+        }).then(data => {
+          this.selectServerCode = data.list;
+          this.listLoading      = false;
+        })
+      },
+
       updateRangeTime($index) {
         //修改告警开始时间
         debugger
@@ -249,6 +344,7 @@
         let shell = this.list[1];
         this.tempScriptConfig.ip             =  "";  
         this.tempScriptConfig.serviceName    =  "";
+        this.tempScriptConfig.shellDesc      =  "";
         this.tempScriptConfig.rangeWarning   =  "";  
         this.tempScriptConfig.rangeCritical  =  "";  
         this.tempScriptConfig.code           =  "";
@@ -260,12 +356,12 @@
       },
       showUpdate($index) {
         debugger
-        let shell            = this.list[$index];        
+        let shell                             = this.list[$index];        
         this.tempScriptConfig.ip              =  shell.ip;  
         this.tempScriptConfig.serviceName     =  shell.serviceName;
         this.tempScriptConfig.rangeWarning    =  shell.rangeWarning;  
         this.tempScriptConfig.rangeCritical   =  shell.rangeCritical;  
-        this.tempScriptConfig.code            =  shell.code;
+        this.tempScriptConfig.shellDesc       =  shell.shellDesc;
         this.tempScriptConfig.dateRangeStart  =  shell.dateRangeStart;
         this.tempScriptConfig.dateRangeEnd    =  shell.dateRangeEnd; 
         this.tempScriptConfig.execTime        =  shell.execTime;
@@ -274,6 +370,7 @@
         this.dialogStatus                     = "update"
         this.dialogFormVisible                = true
       },
+
       createScript() {
         let _vue = this;
         //添加新用户

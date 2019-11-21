@@ -33,9 +33,9 @@
         <el-table-column align="center" label="WAR >=" prop="monitorWarning"></el-table-column>
         <el-table-column align="center" label="CRI <"  prop="monitorCritical"></el-table-column>
       </el-table-column>
-      <el-table-column align="center" label="执行时间" prop="execTime"></el-table-column>
+      <el-table-column align="center" label="执行频率" prop="execTime"></el-table-column>
       <el-table-column align="center" label="超时时间" prop="timeOut"></el-table-column>
-      <el-table-column align="center" width="70" v-if="hasPerm('scriptConfig:update')">
+      <el-table-column align="center" width="70" label="管理" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
           <el-button type="text" icon="el-icon-delete" 
@@ -69,7 +69,7 @@
           <el-input type="text" v-model="tempScriptConfig.shellName"> 
           </el-input>
         </el-form-item>
-        <el-form-item label="关联参数" required label-width="150px">
+        <el-form-item label="关联参数" label-width="150px">
           <el-select v-model="tempScriptConfig.withColumns"  placeholder="请选择" style='width: 255px;' multiple> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for ="item in allColumns"
@@ -135,7 +135,7 @@
           <el-input type="text" v-model="tempScriptConfig.timeOut">
           </el-input>
         </el-form-item>
-        <el-form-item label="执行时间" required label-width="150px" >
+        <el-form-item label="执行频率" required label-width="150px" >
           <el-input v-model="tempScriptConfig.execTime">                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
             <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
@@ -155,7 +155,7 @@
 </template>
 <script>
   import {mapGetters} from 'vuex'
-   import cron from './cron'
+  import cron from './cron'
   export default {
     components: {
       cron
@@ -234,7 +234,7 @@
       getAllShellType() {
         debugger
         this.api({
-          url: "/scriptConfig/getAllShellType",
+          url: "/commonsConfig/getAllShellType",
           method: "get"
         }).then(data => {
           this.allShell = data.list;
@@ -243,7 +243,7 @@
       getAllVersion() {
         debugger
         this.api({
-          url: "/scriptConfig/getAllVersionType",
+          url: "/commonsConfig/getAllVersionType",
           method: "get"
         }).then(data => {
           this.allVersion = data.list;
@@ -293,7 +293,8 @@
       },
       showCreate() {
         //显示新增对话框
-        let shell = this.list[1];
+        debugger
+        let shell = this.list[0];
         this.tempScriptConfig.type            =  "";  
         this.tempScriptConfig.shellName       =  "";
         this.tempScriptConfig.shellDesc       =  "";  
@@ -309,7 +310,11 @@
         this.tempScriptConfig.timeOut         =  "";
         this.tempScriptConfig.systemType      =  "";  
         this.tempScriptConfig.withColumns     =  [];  
-        this.tempScriptConfig.maxCode         = shell.maxCode;;
+        if (shell === undefined) {
+          this.tempScriptConfig.maxCode = '0';    
+        }else{
+          this.tempScriptConfig.maxCode         = shell.maxCode;
+        };
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       },
@@ -317,7 +322,7 @@
         debugger
         let shell            = this.list[$index];
         let withColumns      = shell.withColumns;
-        if (withColumns != undefined){
+        if (withColumns != ""){
           var arrStringColumns = new Array();
           //以and分割 将类型存储数组中
           for(var oldType in withColumns.split(",")){
@@ -411,4 +416,3 @@
     }
   }
 </script>
-

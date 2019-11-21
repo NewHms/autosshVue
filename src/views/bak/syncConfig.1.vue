@@ -3,10 +3,9 @@
     <div class="filter-container">
       <el-form>
  
-      <el-form-item>
-          <el-input v-model="listQuery.shellDesc" placeholder="请输入命令描述" style='width: 300px;' type="text" clearable></el-input>
+        <el-form-item>
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-        </el-form-item>
+        </el-form-item> 
       </el-form>
     </div>
     
@@ -17,20 +16,17 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>        
-      <el-table-column align="center" label="线程ID"   prop="fireInstanceId" width = '130'></el-table-column>
-      <el-table-column align="center" label="IP"      prop="jobHost"></el-table-column>
-      <el-table-column align="center" label="执行命令" prop="jobShellName" width = '200' :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-      <el-table-column align="center" label="命令描述" prop="jobShellDesc" width = '150' :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-      <el-table-column align="center" label="开始时间" prop="jobFireTime"></el-table-column>
-      <el-table-column align="center" label="当前时间" prop="systemTime"></el-table-column>
-      <el-table-column align="center" label="持续时间" prop="jobRunningTime"></el-table-column>
-      <el-table-column align="center" width="40" v-if="hasPerm('scriptConfig:update')">
-        <template slot-scope="scope">
-          <el-button type="text" icon="el-icon-delete" 
-                     @click="removeUser(scope.$index)">
-          </el-button>
-        </template>
+      <el-table-column align="center"   label="服务器"       prop="host"  width="150"  sortable></el-table-column>
+      <el-table-column align="center"   label="实例名"       prop="serviceName" ></el-table-column>
+      <el-table-column align="center"   label="机房"         prop="location" ></el-table-column>
+      <el-table-column align="center"   label="用户名" width="260" :show-overflow-tooltip="true" @contextmenu="showMenu">
+          <template slot-scope="scope">
+            <dt>OS用户名: {{ scope.row.userName }}</dt>
+            <dt>DB用户名: {{ scope.row.dbUsername }}</dt> 
+          </template>
       </el-table-column>
+      <el-table-column align="center"   label="服务器类型"     prop="systemType" ></el-table-column>
+      <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="360" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
     </el-table>
    
     <el-pagination
@@ -42,6 +38,7 @@
       :page-sizes="[10, 20, 50, 100]"
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
+    
   </div>
  
 
@@ -60,16 +57,22 @@
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
         },
-        dialogStatus: 'create',
-        dialogFormVisible: false,
         tempScriptConfig: {
-          fireInstanceId  : '',  
-          jobRunningTime  : '',
-          jobFireTime     : '',  
-          jobHost         : '',
-          jobShellName    : '',  
-          jobShellDesc    : '',
-          systemTime      : ''
+          type            : '',  
+          shellName       : '',
+          shellDesc       : '',  
+          code            : '',
+          dailyRule       : '',  
+          shellUseRe      : '',
+          dailySuccess    : '',  
+          dailyWarning    : '',
+          dailyCritical   : '',  
+          monitorWarning  : '', 
+          monitorCritical : '',  
+          execTime        : '',
+          timeOut         : '',
+          systemType      : '',
+          withColumns     : []
         },
         
       }
@@ -88,7 +91,8 @@
         //查询列表
         this.listLoading = true;
         this.api({
-          url: "/serverConfig/getAllRunJob",
+          
+          url: "/serverConfig/getSyncServer",
           method: "get",
           params: this.listQuery
         }).then(data => {
@@ -116,30 +120,23 @@
         //表格序号
         return (this.listQuery.pageNum - 1) * this.listQuery.pageRow + $index + 1
       },
-      removeUser($index) {
+      createScript() {
         let _vue = this;
-        this.$confirm('确定强制停止JOB?', '提示', {
-          confirmButtonText: '确定',
-          showCancelButton: false,
-          type: 'warning'
+        //添加新用户
+        this.api({
+          url: "/scriptConfig/addScript",
+          method: "post",
+          data: this.tempScriptConfig
         }).then(() => {
-          let script = _vue.list[$index];
-          //user.deleteStatus = '2';
-          this.tempScriptConfig.fireInstanceId = script.fireInstanceId;
-          _vue.api({
-            url: "/serverConfig/killRunJob",
-            method: "post",
-            data: this.tempScriptConfig
-          }).then(() => {
-            _vue.$message.success("停止成功")
-            _vue.getList()
-          }).catch(() => {
-            _vue.$message.success("停止成功")
-            _vue.getList()
-          })
+          _vue.$message.success("新增成功")
+          this.getList();
+          this.dialogFormVisible = false
         })
       },
+
     }
   }
 </script>
-
+<style>
+ dt {text-align:left;  margin-left:5px;}
+</style>
