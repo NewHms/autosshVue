@@ -75,84 +75,96 @@
         <!-- <el-table-column align="center"   label="命令"           prop="shellName" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
         <el-table-column align="center"   label="命令描述"       prop="shellDesc"  width="170" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
         <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="100"></el-table-column> -->
-        <el-table-column align="center"   label="阀值" >
-          <el-table-column align="center" label="日检阀值" width="180">
+        <el-table-column align="center"   label="通用阀值" >
+          <el-table-column align="center" label="日检阀值" width="150">
             <template slot-scope="scope_alarm" >
 
               <dt v-if="scope_alarm.row.dailyWarning != null && scope_alarm.row.dailyCritical != null
-                     && scope_alarm.row.dailyWarning != ''  && scope_alarm.row.dailyCritical != ''
+                     && scope_alarm.row.dailyWarning != '' && scope_alarm.row.dailyCritical != ''
                      && scope_alarm.row.dailyWarningPriv == '' && scope_alarm.row.dailyCriticalPriv == ''">
-                  通用:{{ scope_alarm.row.dailyWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCritical }} &lt;=&nbsp;C
+                  {{ scope_alarm.row.dailyWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCritical }} &lt;=&nbsp;C
               </dt>
-              <dt v-else-if="scope_alarm.row.dailySuccess != ''" class="fail">
-                  通用:
-              </dt> 
-              <dt v-else class="fail">
-                  通用:{{ scope_alarm.row.dailyWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCritical }} &lt;=&nbsp;C
+              <dt v-else-if="scope_alarm.row.dailyWarning != null && scope_alarm.row.dailyCritical != null
+                          && scope_alarm.row.dailyWarning != '' && scope_alarm.row.dailyCritical != ''" class="fail">  
+                  {{ scope_alarm.row.dailyWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCritical }} &lt;=&nbsp;C
               </dt>
-
-              <dt v-if="scope_alarm.row.dailyCriticalPriv != null && scope_alarm.row.dailyCriticalPriv != null
-                     && scope_alarm.row.dailyWarningPriv != ''  && scope_alarm.row.dailyWarningPriv != ''">
-                  私有:{{ scope_alarm.row.dailyWarningPriv  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCriticalPriv }} &lt;=&nbsp;C
-              </dt>
-              <dt v-else class="fail">
-                  私有:
-              </dt>
+              <!-- <dt v-if="scope_alarm.row.dailyCritical != null && scope_alarm.row.dailyCritical != ''">
+                {{ scope_alarm.row.dailyCritical  }}&nbsp;&lt;=&nbsp;CRI
+              </dt> -->
               <dt v-if="scope_alarm.row.dailySuccess != null && scope_alarm.row.dailySuccess != ''
-                     && scope_alarm.row.monitorSuccessPriv == null">
-                  SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }} 
+                    &&  scope_alarm.row.monitorSuccessPriv == null">
+                SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }}
               </dt>
-              <dt v-else-if="scope_alarm.row.monitorSuccessPriv != null && scope_alarm.row.monitorSuccessPriv != ''">
-                  SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccessPriv  }} 
+              <dt v-else-if="scope_alarm.row.dailySuccess != null && scope_alarm.row.dailySuccess != ''" class="fail">
+                SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }}
               </dt>
-              <dt v-else class="fail">
-                  SUC
+              <dt v-if="scope_alarm.row.timeOutPriv == ''">
+                TIMEOUT&nbsp;=&nbsp;{{ scope_alarm.row.timeOut  }}
+              </dt>
+              <dt v-if="scope_alarm.row.timeOutPriv != ''" class="fail">
+                TIMEOUT&nbsp;=&nbsp;{{ scope_alarm.row.timeOut  }}
               </dt>
             </template>
           </el-table-column>
-          <el-table-column align="center" label="监控阀值"  width="180">
+          <el-table-column align="center" label="监控阀值"  width="150">
             <template slot-scope="scope_alarm" >
               <dt v-if="scope_alarm.row.monitorWarning != null && scope_alarm.row.monitorCritical != null
-                     && scope_alarm.row.monitorWarning != ''  && scope_alarm.row.monitorCritical != ''
-                     && scope_alarm.row.monitorWarningPriv == '' && scope_alarm.row.monitorCriticalPriv == ''">
-                  通用:{{ scope_alarm.row.monitorWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCritical }} &lt;=&nbsp;C
+                    &&  scope_alarm.row.monitorWarning != '' && scope_alarm.row.monitorCritical != ''
+                    && scope_alarm.row.monitorWarningPriv == '' && scope_alarm.row.monitorCriticalPriv == ''">
+                {{ scope_alarm.row.monitorWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCritical }} &lt;=&nbsp;C
               </dt>
-              <dt v-else-if="scope_alarm.row.dailySuccess != ''" class="fail">
-                  通用:
-              </dt> 
-              <dt v-else class="fail">
-                  通用:{{ scope_alarm.row.monitorWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCritical }} &lt;=&nbsp;C
+              <dt v-else-if="scope_alarm.row.monitorWarning != null && scope_alarm.row.monitorCritical != null
+                         &&  scope_alarm.row.monitorWarning != '' && scope_alarm.row.monitorCritical != ''" class="fail">
+                {{ scope_alarm.row.monitorWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCritical }} &lt;=&nbsp;C
               </dt>
-
-              <dt v-if="scope_alarm.row.monitorWarningPriv != null && scope_alarm.row.monitorCriticalPriv != null
-                     && scope_alarm.row.monitorWarningPriv != ''  && scope_alarm.row.monitorCriticalPriv != ''">
-                  私有:{{ scope_alarm.row.monitorWarningPriv  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCriticalPriv }} &lt;=&nbsp;C
-              </dt>
-              <dt v-else class="fail">
-                  私有:
-              </dt>
+              <!-- <dt v-if="scope_alarm.row.monitorCritical != null && scope_alarm.row.monitorCritical != ''">
+                {{ scope_alarm.row.monitorCritical  }}&nbsp;&lt;=&nbsp;CRI
+              </dt> -->
               <dt v-if="scope_alarm.row.dailySuccess != null && scope_alarm.row.dailySuccess != ''
-                     && scope_alarm.row.monitorSuccessPriv == null">
-                  SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }} 
+                    &&  scope_alarm.row.monitorSuccessPriv == null">
+                SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }}
               </dt>
-              <dt v-else-if="scope_alarm.row.monitorSuccessPriv != null && scope_alarm.row.monitorSuccessPriv != ''">
-                  SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccessPriv  }} 
+              <dt v-else-if="scope_alarm.row.dailySuccess != null && scope_alarm.row.dailySuccess != ''" class="fail">
+                SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }}
               </dt>
-              <dt v-else class="fail">
-                  SUC
+              <dt v-if="scope_alarm.row.timeOutPriv == ''">
+                TIMEOUT&nbsp;=&nbsp;{{ scope_alarm.row.timeOut  }}
+              </dt>
+              <dt v-if="scope_alarm.row.timeOutPriv != ''" class="fail">
+                TIMEOUT&nbsp;=&nbsp;{{ scope_alarm.row.timeOut  }}
               </dt>
             </template>
           </el-table-column>
         </el-table-column>
-        <el-table-column align="center" label="超时时间"  width="80">
-          <template slot-scope="scope_alarm" >
-            <dt v-if="scope_alarm.row.timeOut != ''">
-              {{ scope_alarm.row.timeOut  }}s
-            </dt>
-            <dt v-else>
-              {{ scope_alarm.row.timeOutPriv  }}s
-            </dt>
-          </template>
+        <el-table-column align="center"     label="私有阀值">
+          <el-table-column align="center" label="日检阀值"  width="150">
+            <template slot-scope="scope_alarm" >
+              <dt v-if="scope_alarm.row.dailyWarningPriv != '' && scope_alarm.row.dailyCriticalPriv != ''
+                     && scope_alarm.row.dailyWarningPriv != null && scope_alarm.row.dailyCriticalPriv != null">
+                {{ scope_alarm.row.dailyWarningPriv  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCriticalPriv }} &lt;=&nbsp;C
+              </dt>
+              <dt v-if="scope_alarm.row.monitorSuccessPriv != '' && scope_alarm.row.monitorSuccessPriv != null">
+                SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccessPriv  }}
+              </dt>
+              <dt>
+                TIMEOUT&nbsp;=&nbsp;{{ scope_alarm.row.timeOutPriv  }}
+              </dt>
+            </template>
+          </el-table-column>
+         <el-table-column align="center" label="监控阀值"  width="150">
+            <template slot-scope="scope_alarm" >
+              <dt v-if="scope_alarm.row.monitorWarningPriv != '' && scope_alarm.row.monitorCriticalPriv != ''
+                     && scope_alarm.row.monitorWarningPriv != null && scope_alarm.row.monitorCriticalPriv != null">
+                {{ scope_alarm.row.monitorWarningPriv  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCriticalPriv }} &lt;=&nbsp;C
+              </dt>
+              <dt v-if="scope_alarm.row.monitorSuccessPriv != '' && scope_alarm.row.monitorSuccessPriv != null">
+                SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccessPriv  }}
+              </dt>
+              <dt>
+                TIMEOUT&nbsp;=&nbsp;{{ scope_alarm.row.timeOutPriv  }}
+              </dt>
+            </template>         
+          </el-table-column>
         </el-table-column>
         <!-- <el-table-column align="center" label="是否执行"     prop="crontab" width="60" :formatter = "stateFormat"> -->
         <el-table-column align="center"   label="是否执行" width="80">
@@ -206,7 +218,7 @@
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 400px; margin-left:50px;' label="right">
                <!--label-width="100px" 设置长度 -->
@@ -381,7 +393,7 @@
 </template>
 <script>
   import {mapGetters} from 'vuex'
-  import cron from './cron'
+  // import cron from './cron'
   export default {
     components: {
           cron

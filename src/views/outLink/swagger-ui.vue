@@ -7,7 +7,7 @@
     
     },
     created() {
-     window.open('http://192.168.208.136:1234/swagger-ui.html#/')
+     window.open('http://192.168.190.93:1234/swagger-ui.html#/')
      this.$router.push({name: '首页'})  
      //在原页面打开
      //window.location.href = 

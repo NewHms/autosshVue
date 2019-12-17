@@ -17,7 +17,7 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-      <el-table-column type="expand" >
+      <el-table-column type="expand"  label="展开">
         <template  slot-scope="scope">
           <el-table :data="listUser" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
               highlight-current-row :cell-class-name="checkDel">
@@ -54,12 +54,12 @@
       <el-table-column align="center"     label="用户组"         prop="alarmGroup"  ></el-table-column>
       <el-table-column align="center"     label="告警级别"       prop="alarmLevel" width="200"></el-table-column>
       <el-table-column align="center"   label="告警优先级">
-        <el-table-column align="center" label="一级" prop="firstAlarm"   width="180" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-        <el-table-column align="center" label="二级" prop="secondAlarm"  width="180" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-        <el-table-column align="center" label="三级" prop="thirdAlarm"   width="180" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+        <el-table-column align="center" label="一级" prop="firstAlarm"   width="180" :show-overflow-tooltip="true"></el-table-column>
+        <el-table-column align="center" label="二级" prop="secondAlarm"  width="180" :show-overflow-tooltip="true"></el-table-column>
+        <el-table-column align="center" label="三级" prop="thirdAlarm"   width="180" :show-overflow-tooltip="true"></el-table-column>
       </el-table-column>
       <el-table-column align="center"     label="告警筛选"      prop="alarmSelect" ></el-table-column>
-      <el-table-column align="center" width="100" v-if="hasPerm('scriptConfig:update')">
+      <el-table-column align="center" width="100" v-if="hasPerm('scriptConfig:update')" label="管理" >
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-plus" @click="showCreateUser(scope.$index)"></el-button>
           <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
@@ -78,11 +78,11 @@
       :page-sizes="[10, 20, 50, 100]"
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
-    <el-dialog :title="textMapUser[dialogStatus]" :visible.sync="dialogFormUser">
+    <el-dialog :title="textMapUser[dialogStatus]" :visible.sync="dialogFormUser" width="40%">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 400px; margin-left:50px;'>
         <el-form-item label="用户名"  label-width="150px">
-          <el-select v-model="tempScriptConfig.userName" v-if="dialogStatus=='update'"   disabled="true" placeholder="请选择" style='width: 255px;' @change="selectFn($event)"> <!-- 对应列名 clearable 清空当前checkbox-->
+          <el-select v-model="tempScriptConfig.userName" v-if="dialogStatus=='update'"   :disabled="true" placeholder="请选择" style='width: 255px;' @change="selectFn($event)"> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in listAllUser"
               :key="item.id"
@@ -100,11 +100,11 @@
           </el-select>
         </el-form-item> 
         <el-form-item label="负责服务器" label-width="150px">
-          <el-input type="text" v-model="tempScriptConfig.dbContact" disabled="true"> 
+          <el-input type="text" v-model="tempScriptConfig.dbContact" :disabled="true"> 
           </el-input>
         </el-form-item>        
         <el-form-item label="邮箱"  label-width="150px">
-          <el-input type="text" v-model="tempScriptConfig.mail" disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.mail" :disabled="true">
           </el-input>
           <el-switch
             v-model="tempScriptConfig.mailStats"
@@ -112,12 +112,12 @@
             inactive-color="#ff4949"
             active-value="0"
             inactive-value="1"
-            disabled="true"
+            :disabled="true"
           >
           </el-switch>
         </el-form-item> 
         <el-form-item label="手机号"  label-width="150px">
-          <el-input type="text" v-model="tempScriptConfig.mobile"  disabled="true">
+          <el-input type="text" v-model="tempScriptConfig.mobile"  :disabled="true">
           </el-input>
           <el-switch
             v-model="tempScriptConfig.mobileStats"
@@ -125,12 +125,12 @@
             inactive-color="#ff4949"
             active-value="0"
             inactive-value="1"
-            disabled="true"
+            :disabled="true"
           >
           </el-switch>
         </el-form-item> 
         <el-form-item label="所属组" required label-width="150px" >
-          <el-select v-model="tempScriptConfig.alarmGroup" placeholder="请选择" style='width: 255px;' disabled="true"> <!-- 对应列名 clearable 清空当前checkbox-->
+          <el-select v-model="tempScriptConfig.alarmGroup" placeholder="请选择" style='width: 255px;' :disabled="true"> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in allAlarmGroup"
               :key="item.id"
@@ -239,6 +239,7 @@
         allAlarmPriority : '',
         allShellDesc     : '',
         allAlarmLevel    : '',
+        listAllUser      : [],
         list             : [],//表格的数据
         listLoading      : false,//数据加载等待动画     
         listQuery: {
@@ -282,7 +283,8 @@
           mailStats      : '',
           wechatStats    : '',
           mobileStats    : '',
-          dbContact      : ''
+          dbContact      : '',
+          connGroupId    : ''
         },
         
       }
@@ -506,7 +508,7 @@
         if(shell.firstAlarm  != undefined && shell.firstAlarm.indexOf('\n') != -1){
           strFirstAlarm = shell.firstAlarm.split("\n")[0]
           this.tempScriptConfig.firstAlarm   = strFirstAlarm;
-           this.tempScriptConfig.secondAlarm =  shell.secondAlarm;
+          this.tempScriptConfig.secondAlarm =  shell.secondAlarm;
           this.tempScriptConfig.thirdAlarm   =  shell.thirdAlarm;
         }else if(shell.secondAlarm  != undefined && shell.secondAlarm.indexOf('\n') != -1){
           strSecondAlarm = shell.secondAlarm.split("\n")[0]
@@ -530,7 +532,7 @@
         this.tempScriptConfig.alarmSelect     = [];
         this.tempScriptConfig.weChat          =  shell.weChat; 
         this.tempScriptConfig.wechatStats     =  shell.wechatStats; 
-        
+        this.tempScriptConfig.connGroupId     =  shell.id;
         this.tempScriptConfig.alarmSelect     = arrStringTypes;
         this.tempScriptConfig.alarmLevel      = arrStringLevel;
        
@@ -587,6 +589,7 @@
         this.tempScriptConfig.mobileStats     =  "";
         this.tempScriptConfig.dbContact       =  "";
         this.tempScriptConfig.alarmGroup      =  shell_out.alarmGroup;  
+        this.tempScriptConfig.connGroupId     =  shell_out.id;
         this.dialogStatus                     =  "create"
         this.dialogFormUser                   =  true
       },

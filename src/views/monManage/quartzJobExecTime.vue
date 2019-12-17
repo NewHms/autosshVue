@@ -19,8 +19,8 @@
       </el-table-column>        
       <el-table-column align="center" label="线程ID"   prop="fireInstanceId" width = '130'></el-table-column>
       <el-table-column align="center" label="IP"      prop="jobHost"></el-table-column>
-      <el-table-column align="center" label="执行命令" prop="jobShellName" width = '200' :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-      <el-table-column align="center" label="命令描述" prop="jobShellDesc" width = '150' :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+      <el-table-column align="center" label="执行命令" prop="jobShellName" width = '200' :show-overflow-tooltip="true"></el-table-column>
+      <el-table-column align="center" label="命令描述" prop="jobShellDesc" width = '150' :show-overflow-tooltip="true"></el-table-column>
       <el-table-column align="center" label="开始时间" prop="jobFireTime"></el-table-column>
       <el-table-column align="center" label="当前时间" prop="systemTime"></el-table-column>
       <el-table-column align="center" label="持续时间" prop="jobRunningTime"></el-table-column>

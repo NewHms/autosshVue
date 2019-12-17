@@ -19,8 +19,8 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>        
-      <el-table-column align="center" label="module" prop="module"></el-table-column>
-      <el-table-column align="center" label="code"   prop="code"></el-table-column>
+      <el-table-column align="center" label="模块名" prop="module"></el-table-column>
+      <el-table-column align="center" label="资源编号"   prop="code"></el-table-column>
       <el-table-column align="center" label="值"     prop="values"></el-table-column>
       <el-table-column align="center" label="说明"    prop="valuesDesc"></el-table-column>
       <el-table-column align="center" width="70" label="管理" v-if="hasPerm('scriptConfig:update')">
@@ -42,22 +42,33 @@
       :page-sizes="[10, 20, 50, 100]"
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 400px; margin-left:50px;'>      
-        <el-form-item label="module" required label-width="150px">
+        
+        <el-form-item label="模块名" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.module"> 
           </el-input>
         </el-form-item>
-        <el-form-item label="code" required label-width="150px">
-          <el-input type="text" v-model="tempScriptConfig.code"> 
+        <el-form-item label="资源编号" required label-width="150px">
+          <el-input type="text" v-model="tempScriptConfig.code"  placeholder="请输入10的倍数"> 
           </el-input>
         </el-form-item>
         <el-form-item label="值" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.values"> 
           </el-input>
         </el-form-item>
-         <el-form-item label="说明" required label-width="150px">
+        <el-form-item label="Title" label-width="150px">
+          <el-select v-model="tempScriptConfig.Title"  placeholder="请选择" style="width:250px"> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for ="item in allResType"
+              :key  ="item.resTypeId"
+              :label="item.resTypeType"
+              :value="item.resTypeType">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="说明" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.valuesDesc"> 
           </el-input>
         </el-form-item>   
@@ -79,6 +90,7 @@
       return {
         totalCount: 0, //分页组件--数据总条数
         list: [],//表格的数据
+        allResType : [],
         listLoading: false,//数据加载等待动画
         listQuery: {
           pageNum: 1,//页码
@@ -94,7 +106,9 @@
           module        : '',  
           code          : '',
           values        : '',  
-          valuesDesc    : ''
+          valuesDesc    : '',
+          maxCode       : '',
+          Title         : ''
         },
         
       }
@@ -102,6 +116,9 @@
     },
     created() {
       this.getList();
+      if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
+        this.getResType();
+      }
     },
     computed: {
       ...mapGetters([
@@ -121,6 +138,15 @@
           this.listLoading = false;
           this.list = data.list;
           this.totalCount = data.totalCount;
+        })
+      },
+      getResType() {
+        debugger
+        this.api({
+          url: "/commonsConfig/f",
+          method: "get"
+        }).then(data => {
+          this.allResType = data.list;
         })
       },
       handleSizeChange(val) {
@@ -144,10 +170,18 @@
       },
       showCreate() {
         //显示新增对话框
+        debugger
+        let shell = this.list[0];
+        if (shell === undefined) {
+          this.tempScriptConfig.maxCode = '0';    
+        }else{
+          this.tempScriptConfig.maxCode         = shell.maxCode;
+        };
         this.tempScriptConfig.module       =  "";  
         this.tempScriptConfig.code         =  "";
         this.tempScriptConfig.values       =  "";  
         this.tempScriptConfig.valuesDesc   =  "";
+        this.tempScriptConfig.Title        =  "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       },
@@ -157,6 +191,7 @@
         this.tempScriptConfig.code         =  shell.code;
         this.tempScriptConfig.values       =  shell.values; 
         this.tempScriptConfig.valuesDesc   =  shell.valuesDesc; 
+        this.tempScriptConfig.Title        =  shell.Title; 
         this.tempScriptConfig.id           = shell.id;
         this.dialogStatus                  = "update"
         this.dialogFormVisible             = true

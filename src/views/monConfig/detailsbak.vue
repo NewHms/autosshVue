@@ -19,7 +19,13 @@
           <span v-text="getIndex(scope.$index)"> </span>
         </template>
       </el-table-column>
-        <el-table-column align="center"   label="服务器"       prop="host"  width="150"  sortable></el-table-column>
+        <el-table-column label="服务器信息" width="215">
+          <template slot-scope="scope">
+            <dt>IP地址: {{ scope.row.host }}</dt>
+            <dt>逻辑名: {{ scope.row.logicalInfo }}</dt> 
+            <dt v-if="scope.row.remark != null">备注:   {{ scope.row.remark }}</dt>
+          </template>
+        </el-table-column>
         <el-table-column align="center"   label="实例名"       prop="serviceName" ></el-table-column>
         <el-table-column align="center"   label="机房"         prop="location" ></el-table-column>
         <el-table-column align="center"   label="监控服务器"   prop="applicationServer" width="150" sortable></el-table-column>
@@ -28,10 +34,10 @@
           <el-table-column align="center" label="DB用户名"     prop="dbUsername" ></el-table-column>
         </el-table-column>
         <el-table-column align="center"   label="服务器类型"     prop="systemType" ></el-table-column>
-        <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="160" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+        <el-table-column align="center"   label="适用版本"       prop="systemVersion" width="160" :show-overflow-tooltip="true"></el-table-column>
         <el-table-column align="center" width="160" label="管理" v-if="hasPerm('scriptConfig:update')">
           <template slot-scope="scope">
-            <el-button type="text" prefix-icon="el-icon-search" @click="goToDetails(scope.$index)">详细信息
+            <el-button type="text" prefix-icon="el-icon-search" @click="goToDetails(scope.$index)">监控明细
             </el-button>
             <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
             <el-button type="text" icon="el-icon-delete" 
@@ -51,13 +57,43 @@
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
-      <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
+      <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="10px"
                style='width: 350px; margin-left:50px;' label="right">
                <!--label-width="100px" 设置长度 -->
         <el-form-item label="服务器"  required  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.host">
           </el-input>
+        </el-form-item>
+        <el-form-item label="实例名"  label-width="120px">
+          <el-input type="text" v-model="tempScriptConfig.serviceName">
+          </el-input>
+        </el-form-item>
+        <el-form-item label="逻辑名"  label-width="120px">
+          <el-row>
+            <el-col :span="12"><el-input type="text" v-model="tempScriptConfig.logicalName"/></el-col>
+            <el-col :span="2">&nbsp;</el-col>
+            <el-col :span="10">
+              <el-select v-model="tempScriptConfig.osRole"  placeholder="请选择" label-width="80px" > <!-- 对应列名 clearable 清空当前checkbox-->
+                <el-option
+                  v-for="item in allosRole"
+                  :key="item.osRoleId"
+                  :label="item.osRoleType"
+                  :value="item.osRoleType">
+                </el-option>
+              </el-select>
+            </el-col>
+          </el-row>
+        </el-form-item>
+        <el-form-item label="服务器角色"  label-width="120px">
+          <el-select v-model="tempScriptConfig.osRole"  placeholder="请选择" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for="item in allosRole"
+              :key="item.osRoleId"
+              :label="item.osRoleType"
+              :value="item.osRoleType">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="实例名"  label-width="120px">
           <el-input type="text" v-model="tempScriptConfig.serviceName">
@@ -104,7 +140,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="服务器类型" required label-width="120px">
-          <el-select v-model="tempScriptConfig.systemType"  placeholder="请选择" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
+          <el-select v-model="tempScriptConfig.systemType"   @change="selectSystemType($event)" placeholder="请选择" label-width="80px" style='width: 230px;'> <!-- 对应列名 clearable 清空当前checkbox-->
             <el-option
               v-for="item in allServer"
               :key="item.serverId"
@@ -115,13 +151,22 @@
         </el-form-item>
         <el-form-item label="适用版本" required label-width="120px">
           <el-select v-model="tempScriptConfig.systemVersion" multiple  placeholder="请选择" label-width="80px" style='width: 230px;'> 
+            <el-option-group
+              v-for="group in alltype"
+              :key="group.Title"
+              :label="group.Title">
             <el-option
-              v-for="item in alltype"
+              v-for="item in group.List"
               :key="item.versionId"
               :label="item.versionType"
               :value="item.versionType">
             </el-option>
+            </el-option-group>
           </el-select>
+        </el-form-item>
+        <el-form-item label="备注" required label-width="120px">
+          <el-input type="textarea" v-model="tempScriptConfig.remark" :autosize="{ minRows: 2, maxRows: 4}" style="width:235px"> 
+          </el-input>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -143,16 +188,23 @@
         isIndeterminate: true,
         showCronBox: false,
         totalCount: 0, //分页组件--数据总条数
-        list: [],//表格的数据
-        allAppServer: [],
-        allServer   : '',
-        alltype     : [],
-        allLocation : '',
         listLoading: false,//数据加载等待动画
+        //定义变量
+        list: [],//表格的数据
+        allAppServer     : [],
+        allApplicaServer : [], 
+        allServer        : [],
+        alltype          : [],
+        allLocation      : [],
+        allosRole        : [],
         listQuery: {
           pageNum: 1,//页码
           pageRow: 50,//每页条数
           shellDesc : '',//查询条件
+        },
+        listQuery_get: {
+          pageNum: 1,//页码
+          pageRow: 50,//每页条数
         },
         dialogStatus: 'create',
         dialogFormVisible: false,
@@ -172,7 +224,11 @@
           userName               : '',
           dbUsername             : '',
           password               : '',
-          dbPassword             : ''
+          dbPassword             : '',
+          logicalName            : '',
+          osRole                 : '',
+          logicalInfo            : '',
+          remark                 : '',
         },
         
       }
@@ -183,9 +239,9 @@
       this.getList();
       if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
         this.getAllLocation();
-        this.getAllVersionType();
         this.getAllAppServer();
         this.getAllServer();
+        this.getAllOsRole();
       }
     },
     computed: {
@@ -202,14 +258,36 @@
                                                         serviceName : details.serviceName,
                                                         systemType  : details.systemType}})
       },
-      getAllVersionType() {
-        this.api({
+      selectSystemType(e){
+        debugger
+        //查询列表
+        this.listLoading             = true;
+        this.listQuery_get.type      = e;
+        this.api({ 
           url: "/commonsConfig/getAllVersionType",
-          method: "get"
+          method: "get",
+          params: this.listQuery_get
         }).then(data => {
-          this.alltype = data.list;
+          this.alltype          = data.list;
+          this.listLoading      = false;
         })
       },
+      getAllOsRole() {
+        this.api({
+          url: "/commonsConfig/getAllOsRole",
+          method: "get"
+        }).then(data => {
+          this.allosRole = data.list;
+        })
+      },
+      // getAllVersionType() {
+      //   this.api({
+      //     url: "/commonsConfig/getAllVersionType",
+      //     method: "get"
+      //   }).then(data => {
+      //     this.alltype = data.list;
+      //   })
+      // },
       getAllLocation() {
         this.api({
           url: "/commonsConfig/getAllLocation",
@@ -312,6 +390,8 @@
         this.tempScriptConfig.dbPassword             = "";
         this.tempScriptConfig.systemType             = "";
         this.tempScriptConfig.timeOut                = "";
+        this.tempScriptConfig.logicalName            = "";
+        this.tempScriptConfig.osRole                 = "";
         this.tempScriptConfig.execTime               = "";
         this.tempScriptConfig.dailyWarningPriv       = "";
         this.tempScriptConfig.dailyCritical_Priv     = "";
@@ -324,6 +404,7 @@
         this.tempScriptConfig.dailyWarning           = "";
         this.tempScriptConfig.monitorCritical        = "";
         this.tempScriptConfig.monitorWarning         = "";
+        this.tempScriptConfig.remark                 = "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       
@@ -357,6 +438,8 @@
         this.tempScriptConfig.type                   = shell.type;
         this.tempScriptConfig.timeOut                = shell.timeOut;
         this.tempScriptConfig.execTime               = shell.execTime;
+        this.tempScriptConfig.logicalName            = shell.logicalName;
+        this.tempScriptConfig.osRole                 = shell.osRole;
         this.tempScriptConfig.dailyWarningPriv       = shell.dailyWarningPriv;
         this.tempScriptConfig.dailyCritical_Priv     = shell.dailyCritical_Priv;
         this.tempScriptConfig.monitorWarningPriv     = shell.monitorWarningPriv;
@@ -368,6 +451,7 @@
         this.tempScriptConfig.dailyWarning           = shell.dailyWarning;
         this.tempScriptConfig.monitorCritical        = shell.monitorCritical;
         this.tempScriptConfig.monitorWarning         = shell.monitorWarning;
+        this.tempScriptConfig.remark                 = shell.remark;
         this.tempScriptConfig.deleteStatus          = '1';
         this.tempScriptConfig.id                    = shell.id;
         this.dialogStatus                           = "update"

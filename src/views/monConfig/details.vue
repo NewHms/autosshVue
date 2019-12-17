@@ -25,7 +25,7 @@
         <el-table-column align="center" label="监控服务器"    prop="applicationServer"></el-table-column>
         <el-table-column align="center"  width="70" v-if="hasPerm('scriptConfig:update')">
           <template slot-scope="scope">
-            <el-button type="text" prefix-icon="el-icon-search" @click="goToDetails(scope.$index)">详细信息
+            <el-button type="text" prefix-icon="el-icon-search" @click="goToDetails(scope.$index)">监控明细
             </el-button>
           </template>
       </el-table-column>

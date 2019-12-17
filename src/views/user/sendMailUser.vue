@@ -2,7 +2,7 @@
   <div class="app-container">    <div class="filter-container">
       <el-form>
         <el-form-item>
-          <el-input v-model="listQuery.alarmGroup" placeholder="请输入告警组" style='width: 300px;' type="text" clearable></el-input>      
+          <el-input v-model="listQuery.userName" placeholder="请输入告警组" style='width: 300px;' type="text" clearable></el-input>      
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>  
           <el-button type="primary" icon="plus" v-if="hasPerm('scriptConfig:add')" @click="showCreate">添加联系人</el-button>        
         </el-form-item>  
@@ -10,7 +10,7 @@
   </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row  height="530"  @expand-change="getListUser" :cell-class-name="checkDel">
+              highlight-current-row  height="530"  :cell-class-name="checkDel">
       <el-table-column align="center" width="50"     label="序号"       prop="id" fixed="left">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
@@ -39,7 +39,7 @@
       :page-sizes="[10, 20, 50, 100]"
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 400px; margin-left:50px;'>
         <el-form-item label="用户名"  label-width="150px">
@@ -97,6 +97,7 @@
         totalCount: 0, //分页组件--数据总条数
         list          : [],//表格的数据
         listLoading   : false,//数据加载等待动画   
+        listServer    : [],
         listQuery: {
           pageNum: 1,//页码
           pageRow: 50,//每页条数

@@ -52,14 +52,14 @@
           <el-button type="danger"  prefix-icon="el-icon-search" @click="getList_critical">告警C</el-button>
           <el-button type="warning" prefix-icon="el-icon-search" @click="getList_warning" >告警W</el-button>
           <el-button type="success" prefix-icon="el-icon-search" @click="getList_success">正常</el-button> -->
-          <el-button :loading="downloadLoading" style="width:60px;" type="text" icon="document" prefix-icon="el-icon-search" @click="doDaily">手动日检</el-button>
-          <el-button :loading="downloadLoading" style="width:60px;" type="text" icon="document" prefix-icon="el-icon-search" @click="dailyLogToExecl">导出EXECL</el-button>  
+          <el-button style="width:60px;" type="text" icon="document" prefix-icon="el-icon-search" @click="doDaily">手动日检</el-button>
+          <el-button style="width:60px;" type="text" icon="document" prefix-icon="el-icon-search" @click="dailyLogToExecl">导出EXECL</el-button>  
         </el-form-item>    
       </el-form>
   </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row :row-style="checkDel" height="530"  @expand-change="getInnerAlarm">
+              highlight-current-row :cell-class-name="checkDel" height="530"  @expand-change="getInnerAlarm">
       <!-- <span v-if="scope.row.execStatus=2" style="color:red">{{ scope.row.execStatus }}</span>         -->
       <el-table-column align="center" width="70"     label="序号"       prop="id" fixed="left">
         <template slot-scope="scope">
@@ -69,7 +69,7 @@
       <el-table-column type="expand" >
         <template  slot-scope="scope">
           <el-table :data="listAlarm" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row :row-style="checkDelInner">
+              highlight-current-row :cell-class-name="checkDelInner">
             <el-table-column align="center" width="50"     label="序号"       prop="id" fixed="left">
                 <template slot-scope="inner">
                   <span v-text="getInnerIndex(inner.$index)"> </span>
@@ -79,9 +79,9 @@
             <el-table-column   align="center" width="130"    label="IP"         prop="ip" sortable></el-table-column>
             <el-table-column   align="center" width="100"    label="实例名"      prop="serviceName"></el-table-column>
             <el-table-column   align="center" width="80"     label="用户名"      prop="USER" ></el-table-column>
-            <el-table-column   align="center" width="150"    label="命令描述"    prop="shellDesc"    :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-            <el-table-column   align="center" width="350"    label="执行结果"    prop="execResult"   :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
-            <el-table-column   align="center" width="90"     label="执行状态"    prop="resultStatus" :cell-class-name="checkDel"  sortable></el-table-column>
+            <!-- <el-table-column   align="center" width="150"    label="命令描述"    prop="shellDesc"    :show-overflow-tooltip="true"></el-table-column> -->
+            <el-table-column   align="center"     label="执行结果"    prop="execResult"   :show-overflow-tooltip="true"></el-table-column>
+            <el-table-column   align="center" width="90"     label="执行状态"    prop="resultStatus"></el-table-column>
             <el-table-column align="center" label="采集时间"  width="120">
               <template slot-scope="scope">
                 <dt>{{ scope.row.execTimeDay  }}</dt>
@@ -101,13 +101,18 @@
           </el-pagination>
         </template>
       </el-table-column>
-      <el-table-column align="center"     label="IP"            prop="ip" sortable  width="130"> </el-table-column>
-      <el-table-column align="center"     label="实例名"         prop="serviceName"  width="80"></el-table-column>
+      <el-table-column label="服务器信息"  width="230">
+        <template slot-scope="scope">
+          <dt>IP地址: {{ scope.row.ip}}</dt>
+          <dt>逻辑名: {{ scope.row.logicalInfo }}</dt> 
+        </template>
+      </el-table-column>  
+      <el-table-column align="center"     label="实例名"         prop="serviceName"  width="100"></el-table-column>
       <el-table-column align="center"     label="机房位置"       prop="location"     width="90">    </el-table-column>
-      <el-table-column align="center"     label="code"          prop="code"         width="70">        </el-table-column>
-      <el-table-column align="center"     label="命令描述"       prop="shellDesc">   </el-table-column>
+      <el-table-column align="center"     label="命令描述"       prop="shellDesc"  >    </el-table-column>
+      <!-- <el-table-column align="center"     label="code"          prop="code"         width="70">        </el-table-column> --> 
       <el-table-column align="center"     label="结果状态"       prop="resultStatus" width="120"></el-table-column>
-      <el-table-column align="center"     label="恢复状态"       prop="status"       width="120" :cell-class-name="checkDel">      </el-table-column>
+      <el-table-column align="center"     label="恢复状态"       prop="status"       width="120">      </el-table-column>
       <el-table-column align="center"     label="告警起始时间"    prop="alarmStartTime" width="210">
         <template  slot-scope="timeScope">
           <el-date-picker
@@ -119,6 +124,15 @@
           </el-date-picker>
         </template>  
       </el-table-column>
+      <el-table-column align="center" width="75" v-if="hasPerm('scriptConfig:update')" label="私有阀值调整" >
+        <template slot-scope="scope">
+         <el-button type="text" prefix-icon="el-icon-search" 
+          icon="el-icon-edit" @click="goToPrivSetting(scope.$index)">
+         </el-button>
+        </template>
+      </el-table-column>
+
+      
     </el-table>
    
     <el-pagination
@@ -141,11 +155,15 @@
     data() {
       return {
         totalCount: 0, //分页组件--数据总条数
-        alltype     : [],     
-        dataTime    : '',
-        list        : [],//表格的数据
-        list_test        : '',
-        allLocation : '',
+        alltype         : [],     
+        dataTime        : '',
+        list            : [],//表格的数据
+        listAlarm       : [],
+        list_test       : '',
+        allShellDesc    : [],
+        allAlarmLevel   : [],
+        totalInnerCount : '',
+        allLocation  : '',
         listLoading: false,//数据加载等待动画     
         listQuery: {
           pageNum: 1,//页码
@@ -215,12 +233,13 @@
           execTimeHour   : '',
           alarmStartTime : '',
           maxExecTime    : '',
-          IP            : '',
-          USER          : '',      
-          execStatus    : '',
-          execNum       : '',
-          type          : '',
-          logType       : '',
+          IP             : '',
+          logicalInfo    : '',
+          USER           : '',      
+          execStatus     : '',
+          execNum        : '',
+          type           : '',
+          logType        : '',
         },
         
       }
@@ -241,23 +260,32 @@
       ])
     },
     methods: { 
+      goToPrivSetting($index) {
+        debugger
+        let _vue = this;
+        let details = _vue.list[$index];
+        this.$router.push({name: '私有阀值配置', params: {host: details.ip,
+                                                        serviceName : details.serviceName,
+                                                        code  : details.code}})
+      },
       checkDelInner({row, column, rowIndex, columnIndex}){
         if (this.listAlarm[rowIndex].resultStatus=='FAIL' || this.listAlarm[rowIndex].resultStatus=='CRITICAL'){
-          return 'color: #FF0000;font-weight: 500;'
+          return 'NG'
         }
         if (this.listAlarm[rowIndex].resultStatus=='WARNING'){
-          return 'color: #CD6600;font-weight: 500;'
+          return 'NG'
         }
         if (this.listAlarm[rowIndex].resultStatus=='SUCCESS'){
-          return 'color: #008000;font-weight: 500;'
+          return 'OK'
         }
       },
       checkDel({row, column, rowIndex, columnIndex}){
-        if (this.list[rowIndex].status=='NG'){
-          return 'color: #FF0000;font-weight: 500;'
+        debugger
+        if (this.list[rowIndex].status == "NG"){
+          return 'NG'
         }
-        if (this.list[rowIndex].status=='OK'){
-          return 'color: #008000;font-weight: 500;'
+        if (this.list[rowIndex].status == "OK"){
+          return 'OK'
         }
       },
       
@@ -445,6 +473,7 @@
         let _vue = this;
         this.listLoading = true;
         this.listQuery_execl.dataTime =  this.listQuery.dataTime
+        this.downloadLoading = true
         this.api({
           url: "/logConfig/dailyLogToExecl",
           method: "get",
@@ -453,6 +482,7 @@
           _vue.$message.success("导出成功")
           this.getList();
           this.dialogFormVisible = false
+          this.downloadLoading   = false
         }).catch(() => {
             _vue.$message.error("导出失败")
             _vue.getList()
@@ -464,6 +494,7 @@
         let _vue = this;
         this.listLoading = true;
         this.listQuery_daily.dataTime =  this.listQuery.dataTime
+        this.downloadLoading   = true
         this.api({
           url: "/logConfig/doDaily",
           method: "get",
@@ -472,6 +503,7 @@
           _vue.$message.success("日检成功")
           this.getList();
           this.dialogFormVisible = false
+          this.downloadLoading   = false
         }).catch(() => {
             _vue.$message.error("日检失败")
             _vue.getList()
@@ -615,8 +647,8 @@
   }
 </script>
 
-<style lang="scss" scoped>
-  /deep/ .el-table .cell.el-tooltip {
+<style  scoped lang="scss">
+  .el-table .cell.el-tooltip {
       white-space: pre-wrap;
   }
   .demo-table-expand {
@@ -631,5 +663,14 @@
     margin-bottom: 0;
     width: 50%;
   }
-  dt {text-align:left;  margin-left:5px;}
+</style>
+<style>
+   dt {text-align:left;  margin-left:5px;}
+  .NG{
+    color: #FF0000;font-weight: 500;
+  }
+  .OK{
+    color: #008000;font-weight: 500;
+  }
+  
 </style>

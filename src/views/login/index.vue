@@ -50,7 +50,7 @@
               this.loading = false
               if ("success" === data.result) {
                 this.$router.push({path: '/'})
-              } else {
+              } else {  
                 this.$message.error("账号/密码错误");
               }
             }).catch(() => {

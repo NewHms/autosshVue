@@ -8,7 +8,7 @@
     },
     created() {
      //打开弹窗 
-     window.open('http://192.168.208.136:1234/druid/sql.html')
+     window.open('http://192.168.190.93:1234/druid/sql.html')
      this.$router.push({name: '首页'})  
     },
     computed: {

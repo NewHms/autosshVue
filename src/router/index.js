@@ -3,6 +3,7 @@ import Router from 'vue-router'
 // in development env not use Lazy Loading,because Lazy Loading too many pages will cause webpack hot update too slow.so only in production use Lazy Loading
 /* layout */
 import Layout from '../views/layout/Layout'
+import Dashboard from '../views/layout/Dashboard'
 import { Loading } from 'element-ui';
 
 const _import = require('./_import_' + process.env.NODE_ENV)
@@ -12,12 +13,12 @@ export const constantRouterMap = [
   {path: '/404', component: _import('404'), hidden: true},
   {
     path: '/',
-    component: Layout,
-    redirect: '/monConfig/',
+    component: Dashboard,
+    redirect: '/dashboard/',
     name: '首页',
     hidden: true,
     children: [{
-      path: 'dashboard', component: _import('monConfig/indexConfig')
+      path: 'dashboard', component: _import('dashboard/test1')
     }]
   },
 ]
@@ -204,7 +205,14 @@ export const asyncRouterMap = [
         component: _import('outLink/druid'), 
         meta: {title: 'druid', icon: 'Druid'}, 
         menu: 'druid'
-      },     
+      },  
+      {
+        path: 'echarts', 
+        name: 'echarts', 
+        component: _import('server/index'), 
+        meta: {title: 'echarts', icon: 'echarts'}, 
+        menu: 'echarts'
+      },  
     ]   
   },
   {path: '*', redirect: '/404', hidden: true}

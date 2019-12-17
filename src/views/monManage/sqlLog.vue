@@ -78,7 +78,7 @@
       </el-table-column>
       <el-table-column align="center"     label="IP"         prop="IP" sortable></el-table-column>
       <el-table-column align="center"     label="实例名"      prop="serviceName" ></el-table-column>
-      <el-table-column align="center"     label="SQL_ID"     prop="sqlId" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
+      <el-table-column align="center"     label="SQL_ID"     prop="sqlId" :show-overflow-tooltip="true"></el-table-column>
       <el-table-column align="center"     label="执行状态"    prop="resultStatus" :cell-class-name="checkDel"  sortable></el-table-column>
       <el-table-column align="center" label="执行时间">
         <el-table-column align="center" label="年-月-日" prop="execTimeDay"  sortable></el-table-column>
