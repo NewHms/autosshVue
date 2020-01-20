@@ -111,12 +111,24 @@
       <el-table-column align="center"     label="机房位置"       prop="location"     width="90">    </el-table-column>
       <el-table-column align="center"     label="命令描述"       prop="shellDesc"  >    </el-table-column>
       <!-- <el-table-column align="center"     label="code"          prop="code"         width="70">        </el-table-column> --> 
-      <el-table-column align="center"     label="结果状态"       prop="resultStatus" width="120"></el-table-column>
-      <el-table-column align="center"     label="恢复状态"       prop="status"       width="120">      </el-table-column>
-      <el-table-column align="center"     label="告警起始时间"    prop="alarmStartTime" width="210">
+      <el-table-column align="center"     label="结果状态"       prop="resultStatus" width="120">
+        <template slot-scope="scope">
+            <dt v-if="scope.row.resultStatus == 'FAIL'"     class="fa fa-close" type = "text">
+            </dt>
+            <dt v-if="scope.row.resultStatus == 'CRITICAL'" class="fa fa-close" type = "text">
+            </dt>
+            <dt v-if="scope.row.resultStatus == 'WARNING'"  class="fa fa-exclamation" type = "text">
+            </dt>
+            <dt v-if="scope.row.resultStatus == 'RECOVER'"  class="fa fa-check" type = "text">
+            </dt>
+        </template>
+      </el-table-column>
+      <!-- <el-table-column align="center"     label="恢复状态"       prop="status"       width="120">      </el-table-column> -->
+      <el-table-column align="center"     label="告警起始时间"    prop="alarmStartTime" width="300">
         <template  slot-scope="timeScope">
           <el-date-picker
             v-model="timeScope.row.alarmStartTime"
+            align="right"
             type="datetime"
             placeholder="选择日期"
             value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" style='width: 185px;'
@@ -261,7 +273,7 @@
     },
     methods: { 
       goToPrivSetting($index) {
-        debugger
+      
         let _vue = this;
         let details = _vue.list[$index];
         this.$router.push({name: '私有阀值配置', params: {host: details.ip,
@@ -317,7 +329,6 @@
       },
 
       getList() {
-        debugger
         //查询列表
         this.listLoading = true;
         var allValue = '';
@@ -468,7 +479,7 @@
       //   })
       // },
       dailyLogToExecl() {
-        debugger
+      
         //刷新定时器
         let _vue = this;
         this.listLoading = true;
@@ -489,7 +500,7 @@
         })
       },
       doDaily() {
-        debugger
+       
         //刷新定时器
         let _vue = this;
         this.listLoading = true;
@@ -536,7 +547,7 @@
         })
       },  
       getInnerAlarm(data,expandedRows) {
-        debugger
+
         //查询列表
         //alert(data)
         this.listLoading = true; 
@@ -566,7 +577,7 @@
       },
       handleSizeChange(val) {
         //改变每页数量
-        debugger
+
         this.listQuery.pageRow = val
         this.handleFilter();
       },
@@ -609,17 +620,17 @@
       },
       handleInnerSizeChange(val) {
         //改变每页数量
-        debugger
+  
         this.listData.pageRow = val
         this.handleInnerFilter();
       },
       handleInnerCurrentChange(val) {
-        debugger
+     
         this.listData.pageNum = val
         this.getInnerAlarm();         
       },
       handleInnerFilter() {
-        debugger
+       
         //查询事件       
         this.listData.pageNum = val
         this.getInnerAlarm();   

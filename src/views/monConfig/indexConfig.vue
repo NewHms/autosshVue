@@ -69,7 +69,7 @@
             <dt>命令描述: {{ scope.row.shellDesc }}</dt> 
             <dt>适用版本: {{ scope.row.systemVersion }}</dt>
             <dt>执行频率: {{ scope.row.execTime }}</dt>
-            <dt>输入参数: {{ scope.row.inputParam }}</dt>
+            <dt>输入参数: {{ scope.row.shareParams }}</dt>
           </template>
         </el-table-column>
         <!-- <el-table-column align="center"   label="命令"           prop="shellName" :show-overflow-tooltip="true" @contextmenu="showMenu"></el-table-column>
@@ -78,79 +78,103 @@
         <el-table-column align="center"   label="阀值" >
           <el-table-column align="center" label="日检阀值" width="180">
             <template slot-scope="scope_alarm" >
+              <div>
+                <div v-if="scope_alarm.row.dailyRule == 0">
+                  <dt v-if="scope_alarm.row.dailySuccess != '' && scope_alarm.row.dailySuccess != null
+                        &&  Object.keys(scope_alarm.row.dailySuccessPriv).length == 0">
+                    通用: SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }} 
+                  </dt>
+                  <dt v-else-if="Object.keys(scope_alarm.row.dailySuccessPriv).length != 0" class="fail">
+                    通用: SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }} 
+                  </dt>
+                  <dt v-else class="fail">
+                    通用:
+                  </dt>
 
-              <dt v-if="scope_alarm.row.dailyWarning != null && scope_alarm.row.dailyCritical != null
-                     && scope_alarm.row.dailyWarning != ''  && scope_alarm.row.dailyCritical != ''
-                     && scope_alarm.row.dailyWarningPriv == '' && scope_alarm.row.dailyCriticalPriv == ''">
-                  通用:{{ scope_alarm.row.dailyWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCritical }} &lt;=&nbsp;C
-              </dt>
-              <dt v-else-if="scope_alarm.row.dailySuccess != ''" class="fail">
-                  通用:
-              </dt> 
-              <dt v-else class="fail">
-                  通用:{{ scope_alarm.row.dailyWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCritical }} &lt;=&nbsp;C
-              </dt>
-
-              <dt v-if="scope_alarm.row.dailyCriticalPriv != null && scope_alarm.row.dailyCriticalPriv != null
-                     && scope_alarm.row.dailyWarningPriv != ''  && scope_alarm.row.dailyWarningPriv != ''">
-                  私有:{{ scope_alarm.row.dailyWarningPriv  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCriticalPriv }} &lt;=&nbsp;C
-              </dt>
-              <dt v-else class="fail">
-                  私有:
-              </dt>
-              <dt v-if="scope_alarm.row.dailySuccess != null && scope_alarm.row.dailySuccess != ''
-                     && scope_alarm.row.monitorSuccessPriv == null">
-                  SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }} 
-              </dt>
-              <dt v-else-if="scope_alarm.row.monitorSuccessPriv != null && scope_alarm.row.monitorSuccessPriv != ''">
-                  SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccessPriv  }} 
-              </dt>
-              <dt v-else class="fail">
-                  SUC
-              </dt>
+                  <dt v-if="Object.keys(scope_alarm.row.dailySuccessPriv).length != 0">
+                    私有: SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccessPriv  }} 
+                  </dt>
+                  <dt v-else class="fail">
+                    私有:
+                  </dt>
+                </div>
+                <div v-else-if="scope_alarm.row.dailyRule == 1">
+                  <dt v-if="scope_alarm.row.dailyWarning != null && scope_alarm.row.dailyCritical != null
+                      && scope_alarm.row.dailyWarning != ''  && scope_alarm.row.dailyCritical != ''
+                      && scope_alarm.row.dailyWarningPriv == '' && scope_alarm.row.dailyCriticalPriv == ''">
+                    通用:{{ scope_alarm.row.dailyWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCritical }} &lt;=&nbsp;C
+                  </dt>
+                  <dt v-else class="fail">
+                    通用:{{ scope_alarm.row.dailyWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCritical }} &lt;=&nbsp;C
+                  </dt>
+                  <dt v-if="scope_alarm.row.dailyCriticalPriv != null && scope_alarm.row.dailyCriticalPriv != null
+                      && scope_alarm.row.dailyWarningPriv != ''  && scope_alarm.row.dailyWarningPriv != ''">
+                    私有:{{ scope_alarm.row.dailyWarningPriv  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.dailyCriticalPriv }} &lt;=&nbsp;C
+                  </dt>
+                  <dt v-else class="fail">
+                    私有:
+                  </dt>
+                </div>
+              </div>  
             </template>
           </el-table-column>
-          <el-table-column align="center" label="监控阀值"  width="180">
-            <template slot-scope="scope_alarm" >
-              <dt v-if="scope_alarm.row.monitorWarning != null && scope_alarm.row.monitorCritical != null
-                     && scope_alarm.row.monitorWarning != ''  && scope_alarm.row.monitorCritical != ''
-                     && scope_alarm.row.monitorWarningPriv == '' && scope_alarm.row.monitorCriticalPriv == ''">
-                  通用:{{ scope_alarm.row.monitorWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCritical }} &lt;=&nbsp;C
-              </dt>
-              <dt v-else-if="scope_alarm.row.dailySuccess != ''" class="fail">
-                  通用:
-              </dt> 
-              <dt v-else class="fail">
-                  通用:{{ scope_alarm.row.monitorWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCritical }} &lt;=&nbsp;C
-              </dt>
 
-              <dt v-if="scope_alarm.row.monitorWarningPriv != null && scope_alarm.row.monitorCriticalPriv != null
-                     && scope_alarm.row.monitorWarningPriv != ''  && scope_alarm.row.monitorCriticalPriv != ''">
-                  私有:{{ scope_alarm.row.monitorWarningPriv  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCriticalPriv }} &lt;=&nbsp;C
-              </dt>
-              <dt v-else class="fail">
-                  私有:
-              </dt>
-              <dt v-if="scope_alarm.row.dailySuccess != null && scope_alarm.row.dailySuccess != ''
-                     && scope_alarm.row.monitorSuccessPriv == null">
-                  SUC&nbsp;=&nbsp;{{ scope_alarm.row.dailySuccess  }} 
-              </dt>
-              <dt v-else-if="scope_alarm.row.monitorSuccessPriv != null && scope_alarm.row.monitorSuccessPriv != ''">
-                  SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccessPriv  }} 
-              </dt>
-              <dt v-else class="fail">
-                  SUC
-              </dt>
+          <el-table-column align="center" label="监控阀值" width="180">
+            <template slot-scope="scope_alarm" >
+              <div>
+                <div v-if="scope_alarm.row.dailyRule == 0">
+                  <dt v-if="scope_alarm.row.monitorSuccess != '' && scope_alarm.row.monitorSuccess != null
+                        &&  Object.keys(scope_alarm.row.monitorSuccessPriv).length == 0">
+                    通用: SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccess  }} 
+                  </dt>
+                  <dt v-else-if="Object.keys(scope_alarm.row.monitorSuccessPriv).length != 0" class="fail">
+                    通用: SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccess  }} 
+                  </dt>
+                  <dt v-else class="fail">
+                    通用:
+                  </dt>
+
+                  <dt v-if="Object.keys(scope_alarm.row.monitorSuccessPriv).length != 0">
+                    私有: SUC&nbsp;=&nbsp;{{ scope_alarm.row.monitorSuccessPriv  }} 
+                  </dt>
+                  <dt v-else class="fail">
+                    私有:
+                  </dt>
+                </div>
+                <div v-else-if="scope_alarm.row.dailyRule == 1">
+                  <dt v-if="scope_alarm.row.monitorWarning != null && scope_alarm.row.monitorCritical != null
+                      && scope_alarm.row.monitorWarning != ''  && scope_alarm.row.monitorCritical != ''
+                      && scope_alarm.row.monitorWarningPriv == '' && scope_alarm.row.monitorCriticalPriv == ''">
+                    通用:{{ scope_alarm.row.monitorWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCritical }} &lt;=&nbsp;C
+                  </dt>
+                  <dt v-else class="fail">
+                    通用:{{ scope_alarm.row.monitorWarning  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCritical }} &lt;=&nbsp;C
+                  </dt>
+                  <dt v-if="scope_alarm.row.dailyCriticalPriv != null && scope_alarm.row.monitorCriticalPriv != null
+                      && scope_alarm.row.monitorWarningPriv != ''  && scope_alarm.row.monitorWarningPriv != ''">
+                    私有:{{ scope_alarm.row.monitorWarningPriv  }}&nbsp;&lt;=&nbsp;W&nbsp;&lt;&nbsp;{{ scope_alarm.row.monitorCriticalPriv }} &lt;=&nbsp;C
+                  </dt>
+                  <dt v-else class="fail">
+                    私有:
+                  </dt>
+                </div>
+              </div>  
             </template>
           </el-table-column>
         </el-table-column>
-        <el-table-column align="center" label="超时时间"  width="80">
+        <el-table-column align="center" label="超时时间"  width="90">
           <template slot-scope="scope_alarm" >
-            <dt v-if="scope_alarm.row.timeOut != ''">
-              {{ scope_alarm.row.timeOut  }}s
+            <dt v-if="scope_alarm.row.timeOut != '' && scope_alarm.row.timeOutPriv == ''">
+              通用:{{ scope_alarm.row.timeOut  }}s
             </dt>
-            <dt v-else>
-              {{ scope_alarm.row.timeOutPriv  }}s
+            <dt v-else class="fail">
+              通用:{{ scope_alarm.row.timeOut  }}s
+            </dt>
+            <dt v-if="scope_alarm.row.timeOutPriv != ''">
+              私有:{{ scope_alarm.row.timeOutPriv  }}s
+            </dt>
+            <dt v-else class="fail">
+              私有:
             </dt>
           </template>
         </el-table-column>
@@ -215,7 +239,7 @@
           </el-input>
         </el-form-item>
         <el-form-item label="逻辑名"  required  label-width="150px" >
-          <el-input type="text" v-model="tempScriptConfig.logicalInfo"           :disabled="true" style="width:235px">
+          <el-input type="text" v-model="tempScriptConfig.logicalInfo"    :disabled="true" style="width:235px">
           </el-input>
         </el-form-item>
         <el-form-item label="监控服务器" required label-width="150px">
@@ -236,16 +260,8 @@
           <el-input type="text" v-model="tempScriptConfig.userName" style="width:235px"      :disabled="true">
           </el-input>
         </el-form-item>
-        <el-form-item label="OS密码"  required  label-width="150px">
-          <el-input type="password" v-model="tempScriptConfig.password" style="width:235px"   :disabled="true">
-          </el-input>
-        </el-form-item>
         <el-form-item label="DB用户"  required  label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.dbUsername" style="width:235px"    :disabled="true">
-          </el-input>
-        </el-form-item>
-        <el-form-item label="DB密码"  required  label-width="150px">
-          <el-input type="password" v-model="tempScriptConfig.dbPassword" style="width:235px" :disabled="true">
           </el-input>
         </el-form-item>
         <el-form-item label="服务器类型" required label-width="150px">
@@ -276,23 +292,44 @@
           <el-input type="text" v-if="dialogStatus=='update'" style="width:235px"  :disabled="true" v-model="tempScriptConfig.shellDesc" ></el-input>
           <el-input type="text" v-else :disabled="true" v-model="tempScriptConfig.shellDesc" style="width:235px"></el-input>
         </el-form-item>
-        <el-form-item label="输入参数"  label-width="150px">
-          <el-input type="text" v-model="tempScriptConfig.inputParam" style="width:235px"></el-input>
+        <el-form-item label="输入参数" label-width="150px">
+          <el-row :gutter="20">
+            <el-col :span="3">
+              <el-button class="fa fa-plus-square" type = "text" @click="addShareLink"></el-button>
+            </el-col> 
+            <el-col :span="3">
+              <el-button class="fa fa-minus-square" type = "text" @click="removeParam"></el-button>
+            </el-col> 
+          </el-row>  
+          <el-row v-for="(todo,index) in this.tempScriptConfig.shareParams" :key="index" :gutter="10">
+            <el-col :span="10" style="margin-left: -30%;">
+              <el-input
+                v-model="todo.attribute"
+                placeholder="输入内容"
+                size="mini" :disabled="true"/>
+            </el-col>
+            <el-col :span="10">
+              <el-input
+                v-model="todo.attributeLogic"
+                placeholder="逻辑名"
+                size="mini" clearable/>
+            </el-col> 
+            <el-col :span="10">
+              <el-input
+              v-model="todo.attributeValue"
+              placeholder="值"
+              size="mini"  clearable/>
+            </el-col> 
+          </el-row>
         </el-form-item>
-        <el-form-item label="通用 SUCCESS"  label-width="150px" >
-          <el-input type="text" v-if="dialogStatus=='update'"   style="width:235px" :disabled="true" v-model="tempScriptConfig.dailySuccess" ></el-input>
-          <el-input type="text" v-else   :disabled="true"  v-model="tempScriptConfig.dailySuccess" style="width:235px"></el-input>
-        </el-form-item>
-        <el-form-item label="私有 SUCCESS"  label-width="150px">
-          <el-input type="text" v-if="dialogStatus=='create'"  style="width:235px" :disabled="true" v-model="tempScriptConfig.monitorSuccessPriv" ></el-input>
-          <el-input type="text" v-else-if="this.tempScriptConfig.dailySuccess == '' || 
-              this.tempScriptConfig.dailySuccess == null" v-model="tempScriptConfig.monitorSuccessPriv" 
-              :disabled="true" style="width:235px">
-          </el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.monitorSuccessPriv" style="width:235px"></el-input>  
-        </el-form-item> 
         <el-form-item label="通用日检阀值"  label-width="150px">
-          <el-row>
+          <el-row v-if="this.tempScriptConfig.dailyRule == '0'">
+            <el-col :span="7" class="fail">SUCC</el-col>
+            <el-col :span="7" class="fail">=</el-col>
+            <el-col :span="8"><el-input type="text" v-model="tempScriptConfig.dailySuccess"
+                   :disabled="true" style="width:87px"/></el-col>
+          </el-row>
+          <el-row v-else-if="this.tempScriptConfig.dailyRule == '1'">
             <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.dailyWarning"
                    :disabled="true"/></el-col>
             <el-col :span="6" class="fail">&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
@@ -300,62 +337,80 @@
                    :disabled="true"/></el-col>
             <el-col :span="6"  class="fail">&nbsp;&nbsp;&lt;=&nbsp;&nbsp;C</el-col>
           </el-row>
+          <el-row v-else>
+            <el-input type="text" :disabled="true"
+                class="fail" style="width:235px"></el-input>
+          </el-row>
         </el-form-item>
-        <el-form-item label="私有日检阀值"  label-width="150px" >
-          <el-row 
-            v-if="this.tempScriptConfig.dailyWarning != '' && this.tempScriptConfig.dailyCritical != ''
-              &&  this.tempScriptConfig.dailyWarning != null && this.tempScriptConfig.dailyCritical != null">
+        <el-form-item label="私有日检阀值"  label-width="150px">
+          <el-row v-if="this.tempScriptConfig.dailyRule == '0'">
+            <el-col :span="7">SUCC</el-col>
+            <el-col :span="7">=</el-col>
+            <el-col :span="8"><el-input type="text" v-model="tempScriptConfig.dailySuccessPriv"
+                  style="width:87px"/></el-col>
+          </el-row>
+          <el-row v-else-if="this.tempScriptConfig.dailyRule == '1'">
             <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.dailyWarningPriv"
-                  @keyup.native="number($event)"/></el-col>
-            <el-col :span="6">&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
+                  @keyup.native="number($event)" /></el-col>
+            <el-col :span="6" >&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
             <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.dailyCriticalPriv"
-                  @keyup.native="number($event)"/></el-col>
+                  @keyup.native="number($event)" /></el-col>
             <el-col :span="6">&nbsp;&nbsp;&lt;=&nbsp;&nbsp;C</el-col>
           </el-row>
           <el-row v-else>
-            <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.dailyWarningPriv"
-                  @keyup.native="number($event)" :disabled="true"/></el-col>
-            <el-col :span="6" class="fail">&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
-            <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.dailyCriticalPriv"
-                  @keyup.native="number($event)" :disabled="true"/></el-col>
-            <el-col :span="6" class="fail">&nbsp;&nbsp;&lt;=&nbsp;&nbsp;C</el-col>
+            <el-input type="text" :disabled="true"
+                class="fail" style="width:235px"></el-input>
           </el-row>
         </el-form-item>
-        <el-form-item label="通用监控阀值"  label-width="150px" >
-          <el-row>
+
+        <el-form-item label="通用监控阀值"  label-width="150px">
+          <el-row v-if="this.tempScriptConfig.dailyRule == '0'">
+            <el-col :span="7" class="fail">SUCC</el-col>
+            <el-col :span="7" class="fail">=</el-col>
+            <el-col :span="8"><el-input type="text" v-model="tempScriptConfig.monitorSuccess"
+                   :disabled="true" style="width:87px"/></el-col>
+          </el-row>
+          <el-row v-else-if="this.tempScriptConfig.dailyRule == '1'">
             <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.monitorWarning"
-                  @keyup.native="number($event)" :disabled="true"/></el-col>
-            <el-col :span="6"  class="fail">&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
+                   :disabled="true"/></el-col>
+            <el-col :span="6" class="fail">&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
             <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.monitorCritical"
-                  @keyup.native="number($event)" :disabled="true"/></el-col>
+                   :disabled="true"/></el-col>
             <el-col :span="6"  class="fail">&nbsp;&nbsp;&lt;=&nbsp;&nbsp;C</el-col>
           </el-row>
-        </el-form-item>  
-        <el-form-item label="私有监控阀值"  label-width="150px" >
-          <el-row
-           v-if="this.tempScriptConfig.monitorWarning != '' && this.tempScriptConfig.monitorCritical != ''
-             &&  this.tempScriptConfig.monitorWarning != null && this.tempScriptConfig.monitorCritical != null">
+          <el-row v-else>
+            <el-input type="text" :disabled="true"
+                class="fail" style="width:235px"></el-input>
+          </el-row>
+        </el-form-item>
+        <el-form-item label="私有监控阀值"  label-width="150px">
+          <el-row v-if="this.tempScriptConfig.dailyRule == '0'">
+            <el-col :span="7">SUCC</el-col>
+            <el-col :span="7">=</el-col>
+            <el-col :span="8"><el-input type="text" v-model="tempScriptConfig.monitorSuccessPriv"
+                  style="width:87px"/></el-col>
+          </el-row>
+          <el-row v-else-if="this.tempScriptConfig.dailyRule == '1'">
             <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.monitorWarningPriv"
-                  @keyup.native="number($event)"/></el-col>
-            <el-col :span="6">&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
+                  @keyup.native="number($event)" /></el-col>
+            <el-col :span="6" >&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
             <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.monitorCriticalPriv"
-                  @keyup.native="number($event)"/></el-col>
+                  @keyup.native="number($event)" /></el-col>
             <el-col :span="6">&nbsp;&nbsp;&lt;=&nbsp;&nbsp;C</el-col>
           </el-row>
           <el-row v-else>
-            <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.monitorWarningPriv"
-                  @keyup.native="number($event)" disabled="true"/></el-col>
-            <el-col :span="6" class="fail">&nbsp;&nbsp;&lt;=&nbsp;W&nbsp;&lt;</el-col>
-            <el-col :span="6"><el-input type="text" v-model="tempScriptConfig.monitorCriticalPriv"
-                  @keyup.native="number($event)" :disabled="true"/></el-col>
-            <el-col :span="6" class="fail">&nbsp;&nbsp;&lt;=&nbsp;&nbsp;C</el-col>
+            <el-input type="text" :disabled="true"
+                class="fail" style="width:235px"></el-input>
           </el-row>
         </el-form-item>
-        <el-form-item label="超时时间"  label-width="150px" >
-          <el-input type="text" v-if="dialogStatus=='create'"   :disabled="true" v-model="tempScriptConfig.timeOut" style="width:235px"></el-input>
-          <el-input type="text" v-else v-model="tempScriptConfig.timeOutPriv" 
-                @keyup.native="number($event)" style="width:235px"></el-input>
+        <el-form-item label="通用超时时间"  label-width="150px" >
+          <el-input type="text" v-model="tempScriptConfig.timeOut" :disabled="true"
+                class="fail" style="width:235px"></el-input>
         </el-form-item> 
+        <el-form-item label="私有超时时间"  label-width="150px" >
+          <el-input type="text" v-model="tempScriptConfig.timeOutPriv" 
+                @keyup.native="number($event)" style="width:235px"></el-input>
+        </el-form-item>
         <el-form-item label="执行频率" label-width="150px" >
           <el-input v-model="tempScriptConfig.execTime" v-if="dialogStatus=='create'" style="width:235px">                                                  
             <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
@@ -435,8 +490,6 @@
           isDelete               : "",
           userName               : "",
           dbUsername             : "",
-          password               : "",
-          dbPassword             : "",
           type                   : "",
           timeOut                : "",
           timeOutPriv            : "",
@@ -446,16 +499,19 @@
           monitorWarningPriv     : "",
           monitorCriticalPriv    : "",
           shellName              : "",
+          dailyRule              : "",
           shellDesc              : "",
           crontab                : "",
           dailyCritical          : "",
           dailySuccess           : "",
+          monitorSuccess         : "",
           monitorSuccessPriv     : "",
           dailyWarning           : "",
           monitorCritical        : "",
           monitorWarning         : "",
-          inputParam             : "",
           logicalInfo            : "",
+          shareParams            : [],
+          attributeLen           : ""
         },
         
       }
@@ -487,6 +543,37 @@
       ])
     },
     methods: {
+      // 添加分享链接参数
+      addShareLink() {
+        debugger
+        if(this.tempScriptConfig.attributeLen < 5){
+          this.tempScriptConfig.attributeLen += 1;
+          this.tempScriptConfig.shareParams.push({
+            id: this.tempScriptConfig.attributeLen,
+            attribute     : `attribute${this.tempScriptConfig.attributeLen}`,
+            attributeLogic: '',
+            attributeValue: '',
+          });
+        } else{
+          this.$message({
+            showClose:true,
+            message:'超过5个参数项'
+          })
+        }   
+      },
+      // 删除分享参数
+      removeParam() {
+        debugger
+        var index = this.tempScriptConfig.attributeLen
+        if(index  == 0){
+           this.tempScriptConfig.shareParams.splice(index, 1);
+        }else{
+          index = index - 1
+          this.tempScriptConfig.shareParams.splice(index, 1);
+          this.tempScriptConfig.attributeLen = index
+        }
+        
+      },
       getAllShellDesc() {
         this.api({
           url: "/logConfig/getAllShellDesc",
@@ -668,12 +755,11 @@
         this.tempScriptConfig.systemType             = "";
         this.tempScriptConfig.userName               = "";
         this.tempScriptConfig.dbUsername             = "";
-        this.tempScriptConfig.password               = "";
-        this.tempScriptConfig.dbPassword             = "";
         this.tempScriptConfig.systemType             = "";
         this.tempScriptConfig.timeOut                = "";
         this.tempScriptConfig.timeOutPriv            = "";
         this.tempScriptConfig.execTime               = "";
+        this.tempScriptConfig.monitorSuccess         = "";
         this.tempScriptConfig.monitorSuccessPriv     = "";
         this.tempScriptConfig.dailyWarningPriv       = "";
         this.tempScriptConfig.dailyCriticalPriv      = "";
@@ -686,7 +772,6 @@
         this.tempScriptConfig.dailyWarning           = "";
         this.tempScriptConfig.monitorCritical        = "";
         this.tempScriptConfig.monitorWarning         = "";
-        this.tempScriptConfig.inputParam             = "";
         this.tempScriptConfig.logicalInfo            = "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
@@ -708,12 +793,14 @@
         this.tempScriptConfig.systemVersion          = shell.systemVersion;
         this.tempScriptConfig.userName               = shell.userName;
         this.tempScriptConfig.dbUsername             = shell.dbUsername;
+        this.tempScriptConfig.timeOut                = shell.timeOut;
         this.tempScriptConfig.timeOutPriv            = shell.timeOutPriv;
-        this.tempScriptConfig.password               = shell.password;
-        this.tempScriptConfig.dbPassword             = shell.dbPassword;
         this.tempScriptConfig.type                   = shell.type;
+        this.tempScriptConfig.dailyRule              = shell.dailyRule;
         this.tempScriptConfig.execTime               = shell.execTime;
+        this.tempScriptConfig.monitorSuccess         = shell.monitorSuccess;
         this.tempScriptConfig.monitorSuccessPriv     = shell.monitorSuccessPriv;
+        this.tempScriptConfig.dailySuccessPriv       = shell.dailySuccessPriv;
         this.tempScriptConfig.dailyWarningPriv       = shell.dailyWarningPriv;
         this.tempScriptConfig.dailyCriticalPriv      = shell.dailyCriticalPriv;
         this.tempScriptConfig.monitorWarningPriv     = shell.monitorWarningPriv;
@@ -725,7 +812,12 @@
         this.tempScriptConfig.dailyWarning           = shell.dailyWarning;
         this.tempScriptConfig.monitorCritical        = shell.monitorCritical;
         this.tempScriptConfig.monitorWarning         = shell.monitorWarning;
-        this.tempScriptConfig.inputParam             = shell.inputParam;
+        if(shell.shareParams == undefined){
+          this.tempScriptConfig.shareParams   =  [];
+        }else{
+          this.tempScriptConfig.shareParams   =  JSON.parse(shell.shareParams);
+        }
+        this.tempScriptConfig.attributeLen    =  shell.attributeLen;
         this.tempScriptConfig.deleteStatus          = '1';
         this.tempScriptConfig.id                    = shell.id;
         this.dialogStatus                           = "update"
