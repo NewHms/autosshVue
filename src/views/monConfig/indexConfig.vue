@@ -6,7 +6,7 @@
         <el-form-item>
           <el-input v-model="listQuery.host" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" 
            @input="change($event)" clearable></el-input>
-          <el-select v-model="tempScriptConfig.shellDesc" placeholder="请选择命令描述" label-width="80px" multiple style='width: 30%;max-height:300px;'> 
+          <el-select v-model="selectShellDesc" placeholder="请选择命令描述" label-width="80px" multiple style='width: 30%;max-height:300px;'> 
             <el-option
               v-for="item in allShellDesc"
               :key="item.code"
@@ -16,15 +16,6 @@
             </el-option>
           </el-select> 
           <el-button type="primary" prefix-icon="el-icon-search" @click="getList">查询</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-checkbox-group v-model="allAppServer">
-            <el-checkbox v-for="item in allApplicaServer" 
-                        :label="item.appType" 
-                        :key  ="item.appId"
-                        :value="item.appType" :disabled="true">
-            </el-checkbox>
-          </el-checkbox-group>
         </el-form-item>
       </el-form>
     </div>
@@ -214,7 +205,7 @@
           <template slot-scope="scope">
             <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
             <el-button type="text" icon="el-icon-delete" 
-                     @click="removeUser(scope.$index)">
+                     @click="removeUser(scope.$index)" :loading=this.listLoading>
             </el-button>
           </template>
       </el-table-column>
@@ -244,12 +235,6 @@
         </el-form-item>
         <el-form-item label="监控服务器" required label-width="150px">
           <el-select v-model="tempScriptConfig.applicationServer"         :disabled="true" placeholder="请选择" label-width="80px" style="width:235px"> <!-- 对应列名 clearable 清空当前checkbox-->
-            <el-option
-              v-for="item in allApplicaServer"
-              :key="item.appId"
-              :label="item.appType"
-              :value="item.appType">
-            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="端口"  required  label-width="150px" >
@@ -292,7 +277,22 @@
           <el-input type="text" v-if="dialogStatus=='update'" style="width:235px"  :disabled="true" v-model="tempScriptConfig.shellDesc" ></el-input>
           <el-input type="text" v-else :disabled="true" v-model="tempScriptConfig.shellDesc" style="width:235px"></el-input>
         </el-form-item>
-        <el-form-item label="输入参数" label-width="150px">
+        <el-form-item label="是否二次处理" label-width="150px">
+          <el-switch
+            v-model="tempScriptConfig.processStatus"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+            active-value="0" 
+            inactive-value="1">
+          </el-switch>
+        </el-form-item>
+        <el-form-item label="处理SQL" label-width="150px" >
+          <el-input type="textarea" v-model="tempScriptConfig.processSql" :autosize="{ minRows: 2, maxRows: 4}" style="width:235px" v-if="tempScriptConfig.processStatus=='0'"> 
+          </el-input>
+          <el-input type="textarea" v-model="tempScriptConfig.processSql" :autosize="{ minRows: 2, maxRows: 4}" style="width:235px" v-else :disabled="true"> 
+          </el-input>
+        </el-form-item>
+        <el-form-item label="变量参数" label-width="150px">
           <el-row :gutter="20">
             <el-col :span="3">
               <el-button class="fa fa-plus-square" type = "text" @click="addShareLink"></el-button>
@@ -319,6 +319,41 @@
               v-model="todo.attributeValue"
               placeholder="值"
               size="mini"  clearable/>
+            </el-col> 
+          </el-row>
+        </el-form-item>
+        <el-form-item label="阀值参数" label-width="150px">
+          <el-row :gutter="20">
+            <el-col :span="3">
+              <el-button class="fa fa-plus-square" type = "text" @click="addThreshLink"></el-button>
+            </el-col> 
+            <el-col :span="3">
+              <el-button class="fa fa-minus-square" type = "text" @click="removeThresh"></el-button>
+            </el-col> 
+          </el-row>  
+          <el-row v-for="(todo,index) in this.tempScriptConfig.outPutParams" :key="index" :gutter="10">
+            <el-col :span="10" style="margin-left: -30%;">
+              <el-input
+                v-model="todo.attribute"
+                placeholder="输入内容"
+                size="mini" :disabled="true"/>
+            </el-col>
+            <el-col :span="10">
+              <el-select v-model="todo.attributeValue"  placeholder="请选择" size="mini" @change="selectParamDesc($event,index)">  <!-- 对应列名 clearable 清空当前checkbox-->
+                <el-option
+                  v-for ="item in allParamJson"
+                  :key  ="item.paramJsonId"
+                  :label="item.reValues"  
+                  :value="item.reValues"
+                  style="font-size: 10px;">
+                </el-option>
+              </el-select>
+            </el-col> 
+            <el-col :span="10">
+              <el-input
+                v-model="todo.attributeLogic"
+                placeholder="逻辑名"
+                size="mini" :disabled="true"/>  
             </el-col> 
           </el-row>
         </el-form-item>
@@ -426,8 +461,8 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false;alltype=[]">取 消</el-button>
-        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
-        <el-button type="primary" v-else @click="updateScript">修 改</el-button>
+        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript" :loading=this.listLoading>创 建</el-button>
+        <el-button type="primary" v-else @click="updateScript" :loading=this.listLoading>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -454,12 +489,18 @@
         allServer   : [],
         alltype     : [],
         allShellDesc     : [],
-        allApplicaServer : [],
+        allParamJson     : [],
+        allParamDesc     : [],
+        selectShellDesc  : [],
         e       : "",
         listQuery: {
           pageNum   : 1,//页码
           pageRow   : 50,//每页条数
           shellDesc : "",//查询条件
+        },
+        listQuery_param: {
+          pageNum   : 1,//页码
+          pageRow   : 50,//每页条数
         },
 
         crontab: [{
@@ -510,8 +551,12 @@
           monitorCritical        : "",
           monitorWarning         : "",
           logicalInfo            : "",
+          processStatus          : '',
+          processSql             : '',
           shareParams            : [],
-          attributeLen           : ""
+          outPutParams           : [],
+          attributeLen           : "",
+          outPutLen              : ""
         },
         
       }
@@ -532,9 +577,9 @@
       //   this.getAllRoles();
       // }
       if (this.hasPerm('scriptConfig:add') || this.hasPerm('scriptConfig:update')) {
-        this.getAllAppServer();
         this.getAllServer();
         this.getAllShellDesc();
+        this.getAllJsonParam();
       }
     },
     computed: {
@@ -561,6 +606,25 @@
           })
         }   
       },
+
+      addThreshLink() {
+        debugger
+        if(this.tempScriptConfig.outPutLen< 5){
+          this.tempScriptConfig.outPutLen+= 1;
+          this.tempScriptConfig.outPutParams.push({
+            id: this.tempScriptConfig.outPutLen,
+            attribute     : `attribute${this.tempScriptConfig.outPutLen}`,
+            attributeLogic: '',
+            attributeValue: '',
+          });
+        } else{
+          this.$message({
+            showClose:true,
+            message:'超过5个参数项'
+          })
+        }   
+      },
+
       // 删除分享参数
       removeParam() {
         debugger
@@ -574,6 +638,48 @@
         }
         
       },
+
+      // 删除分享参数
+      removeThresh() {
+        debugger
+        var index = this.tempScriptConfig.outPutLen
+        if(index  == 0){
+           this.tempScriptConfig.outPutParams.splice(index, 1);
+        }else{
+          index = index - 1
+          this.tempScriptConfig.outPutParams.splice(index, 1);
+          this.tempScriptConfig.outPutLen= index
+        }
+        
+      },
+
+      getAllJsonParam() {
+        this.api({
+          url: "/commonsConfig/getParamJson",
+          method: "get",
+          params:this.listQuery_param
+        }).then(data => {
+          this.allParamJson = data.list;
+        })
+      },
+      
+      selectParamDesc(e,index){
+        debugger
+        //查询列表
+        this.listLoading    = true;
+        this.listQuery_param.reValues   = e;
+        this.api({ 
+          url: "/commonsConfig/getParamJson",
+          method: "get",
+          params: this.listQuery_param
+        }).then(data => {
+          this.allParamDesc = data.list[0];
+          //alert(this.allParamDesc["valueDesc"])
+          this.tempScriptConfig.outPutParams[index].attributeLogic = this.allParamDesc["valueDesc"]
+          this.listLoading   = false;
+        })
+      },
+
       getAllShellDesc() {
         this.api({
           url: "/logConfig/getAllShellDesc",
@@ -644,14 +750,7 @@
           this.allServer = data.list;
         })
       },
-      getAllAppServer() {
-        this.api({
-          url: "/commonsConfig/getAllAppServer",
-          method: "get"
-        }).then(data => {
-          this.allApplicaServer = data.list;
-        })
-      },
+      
       getList() {
         debugger
         //查询列表
@@ -672,10 +771,10 @@
         } 
 
         var allValue = '';
-        for(var oldType in this.tempScriptConfig.shellDesc){
+        for(var oldType in this.selectShellDesc){
             // vue是数组类型是用push赋值
             //alert(oldType + (this.tempScriptConfig.shellDesc).length -1)
-            allValue  =  allValue+this.tempScriptConfig.shellDesc[oldType]+ ',';           
+            allValue  =  allValue + this.selectShellDesc[oldType]+ ',';           
         }
         this.listQuery.strShellDesc = allValue
         this.api({
@@ -699,12 +798,13 @@
         //修改告警开始时间
         debugger
         let _vue = this;
-       
+        this.listLoading = true;
         this.api({
           url: "/serverConfig/updateDateRange",
           method: "post",
           data:  this.list[$index]
         }).then(() => {
+          this.listLoading = false;
           let msg = "修改成功";
           this.dialogFormVisible = false
           if (this.userId === this.tempScriptConfig.userId) {
@@ -773,6 +873,8 @@
         this.tempScriptConfig.monitorCritical        = "";
         this.tempScriptConfig.monitorWarning         = "";
         this.tempScriptConfig.logicalInfo            = "";
+        this.tempScriptConfig.processStatus          =  "";
+        this.tempScriptConfig.processSql             =  "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       
@@ -812,12 +914,20 @@
         this.tempScriptConfig.dailyWarning           = shell.dailyWarning;
         this.tempScriptConfig.monitorCritical        = shell.monitorCritical;
         this.tempScriptConfig.monitorWarning         = shell.monitorWarning;
+        this.tempScriptConfig.processStatus          =  shell.processStatus;
+        this.tempScriptConfig.processSql             =  shell.processSql;
+        this.tempScriptConfig.attributeLen           =  shell.attributeLen;
+        this.tempScriptConfig.outPutLen              =  shell.outPutLen;
         if(shell.shareParams == undefined){
           this.tempScriptConfig.shareParams   =  [];
         }else{
           this.tempScriptConfig.shareParams   =  JSON.parse(shell.shareParams);
         }
-        this.tempScriptConfig.attributeLen    =  shell.attributeLen;
+        if(shell.outPutParams == undefined){
+          this.tempScriptConfig.outPutParams   =  [];
+        }else{
+          this.tempScriptConfig.outPutParams   =  JSON.parse(shell.outPutParams);
+        }
         this.tempScriptConfig.deleteStatus          = '1';
         this.tempScriptConfig.id                    = shell.id;
         this.dialogStatus                           = "update"
@@ -828,11 +938,13 @@
         debugger
         let _vue = this;
         //添加新配置
+        this.listLoading = true;
         this.api({
           url: "/serverConfig/addServer",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           _vue.$message.success("新增成功")
           this.getList();
           this.dialogFormVisible = false
@@ -842,12 +954,13 @@
         //修改配置信息
         debugger
         let _vue = this;
-        
+        this.listLoading = true;
         this.api({
           url: "/serverConfig/updateRuleSetting",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           let msg = "修改成功";
           this.dialogFormVisible = false
           if (this.userId === this.tempScriptConfig.userId) {
@@ -858,7 +971,7 @@
             type: 'success',
             duration: 1 * 1000,
             onClose: () => {
-              this.tempScriptConfig.shellDesc = '';
+              this.selectShellDesc = [];
               _vue.getList();
             }
           })
@@ -866,6 +979,7 @@
       },
       removeUser($index) {
         let _vue = this;
+        this.listLoading = true
         this.$confirm('确定删除此配置?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
@@ -879,9 +993,11 @@
             method: "post",
             data: this.tempScriptConfig
           }).then(() => {
+            this.listLoading = false
             _vue.$message.success("删除成功")
             _vue.getList()
           }).catch(() => {
+            this.listLoading = false
             _vue.$message.error("删除失败")
           })
         })

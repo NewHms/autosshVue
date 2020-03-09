@@ -41,7 +41,7 @@
     </div>
     
     <el-table :data="list" v-loading.body="listLoading" element-loading-text="拼命加载中" border fit
-              highlight-current-row height="530">
+              highlight-current-row height="530" :row-class-name="tableRowClassName">
       <el-table-column align="center" label="序号" width="40" fixed="left">
         <template slot-scope="scope">
           <span v-text="getIndex(scope.$index)"> </span>
@@ -82,8 +82,14 @@
           <dt>适用版本: {{ scope.row.systemType }}</dt> 
         </template>
       </el-table-column> -->
-      <el-table-column align="center" label="判断规则"   prop="dailyRule"  width="80"></el-table-column>
-      <el-table-column align="center" label="适配正则"   prop="valuesDesc" width="165%"></el-table-column>
+      <el-table-column align="center" label="执行统计"   prop="execStatus" width="120px"></el-table-column>
+      <el-table-column align="center" label="判断规则"   prop="dailyRule" width="80px"></el-table-column>
+      <el-table-column align="center"   label="适配正则" width="250%">
+          <template slot-scope="scope">
+            <dt>规则描述: {{ scope.row.valuesDesc }}</dt> 
+            <dt>表达式:   {{ scope.row.shellUseRe }}</dt>
+          </template>
+      </el-table-column>
       <!-- <el-table-column align="center" label="等式阀值" width="110%">
         <template slot-scope="scope" >
           <dt v-if="scope.row.dailySuccess != null && scope.row.dailySuccess != ''">
@@ -125,16 +131,19 @@
       </el-table-column>
       <el-table-column align="center" label="超时时间(s)" prop="timeOut"  width="80"></el-table-column>
       <el-table-column align="center" label="执行频率" prop="execTime" width="150"></el-table-column>
-      <el-table-column align="center" width="70" label="管理" v-if="hasPerm('scriptConfig:update')">
+      <el-table-column align="center" width="120" label="管理" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
           <el-button type="text" icon="el-icon-delete" 
-                     @click="removeUser(scope.$index)">
-          </el-button>
+                     @click="removeUser(scope.$index)" :loading=this.listLoading></el-button>
+          <!-- <el-button type="text" icon="el-icon-edit" @click="shellStats(scope.$index)">下线</el-button> -->
+          <el-button type="text" @click="shellStats(scope.$index)" v-if="scope.row.shellStats == 1">上线</el-button>
+          <el-button type="text" @click="showShellStats(scope.$index)" v-else>下线</el-button>
         </template>
+        
       </el-table-column>
     </el-table>
-   
+
     <el-pagination
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
@@ -144,10 +153,19 @@
       :page-sizes="[10, 20, 50, 100]"
       layout="total, sizes, prev, pager, next, jumper">
     </el-pagination>
+    <el-dialog title="下线理由" :visible.sync="downFormVisible" width="25%" >
+      <el-form class="small-space" :model="shell_stat" label-position="left" label-width="80px">        
+        <el-form-item  >
+          <el-input type="textarea"  :autosize="{ minRows: 3, maxRows: 4}"  v-model="shell_stat.downRemark" style='width:235px;margin-left:-80px;'/> 
+          <el-button  @click="downFormVisible = false" size="small">取消</el-button>
+          <el-button type="primary"  @click="shellStats($index)" size="small" :loading=this.listLoading>提交</el-button>
+        </el-form-item>
+      </el-form>   
+    </el-dialog>
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="40%">
       <el-form class="small-space" :model="tempScriptConfig" label-position="left" label-width="80px"
                style='width: 400px; margin-left:50px;'>        
-        <el-form-item label="命令编号" required label-width="150px" v-if="dialogStatus=='create'" >
+        <el-form-item label="命令编号" required label-width="150px" v-if="dialogStatus=='create'">
           <el-input type="text" v-model="tempScriptConfig.maxCode"  placeholder="请输入10的倍数" :disabled="true" style="width:235px"> 
           </el-input>
         </el-form-item>
@@ -306,15 +324,27 @@
           <el-input type="text" v-model="tempScriptConfig.timeOut" @keyup.native="number($event)" style="width:235px">
           </el-input>
         </el-form-item>
-        <el-form-item label="测试" required label-width="150px">
+        <el-form-item label="执行频率" required label-width="150px" >
+          <el-input v-model="tempScriptConfig.execTime" style="width:235px">                                                  
+            <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
+            <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
+          </el-input>
+        </el-form-item>
+        <cron v-if="showCronBox" v-model="tempScriptConfig.execTime"  style="width:530px;color:#2c3e50;margin-left:-50px"></cron>
+        <el-form-item label="告警格式" label-width="150px">
+          <el-select v-model="tempScriptConfig.messageFormat"  placeholder="请选择" style='width: 235px;' clearable> <!-- 对应列名 clearable 清空当前checkbox-->
+            <el-option
+              v-for ="item in allMessageFormat"
+              :key  ="item.messageId"
+              :label="item.messageValue"  
+              :value="item.messageValue"
+              style="font-size: 10px;">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="校验正则" required label-width="150px">
           <el-row>
-            <el-col :span="13"><el-input type="text" placeholder="输入服务器地址" v-model="listQuery_shell.host"/></el-col>
-            <el-col :span="8">
-              <el-input v-if="this.tempScriptConfig.type != 'Oracle'" type="text"  placeholder="实例名" 
-                v-model="listQuery_shell.serviceName" :disabled="true"/>
-              <el-input v-else type="text"  placeholder="实例名" 
-                v-model="listQuery_shell.serviceName"/>                
-            </el-col>
+            <el-col :span="22"><el-input type="text" placeholder="输入服务器地址" v-model="listQuery_shell.host"/></el-col>
             <el-col :span="1">
               <el-button class="fa fa-check" type = "text" v-if="this.doTestResult=='OK'"></el-button>
               <el-button class="fa fa-close" type = "text" v-else-if="this.doTestResult=='FAIL'"></el-button>
@@ -323,18 +353,11 @@
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item label="执行频率" required label-width="150px" >
-          <el-input v-model="tempScriptConfig.execTime" style="width:235px">                                                  
-            <el-button slot="append" v-if="!showCronBox" icon="el-icon-arrow-up" @click="showCronBox = true" title="打开图形配置"></el-button>
-            <el-button slot="append" v-else icon="el-icon-arrow-down" @click="showCronBox = false" title="关闭图形配置"></el-button>
-          </el-input>
-        </el-form-item>
-        <cron v-if="showCronBox" v-model="tempScriptConfig.execTime"  style="width:530px;color:#2c3e50;margin-left:-50px"></cron>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
-        <el-button type="primary" v-else @click="updateScript">修 改</el-button>
+        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript" :loading=this.listLoading>创 建</el-button>
+        <el-button type="primary" v-else @click="updateScript" :loading=this.listLoading>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -353,16 +376,17 @@
         showCronBox: false,
         totalCount: 0, //分页组件--数据总条数
         listLoading: false,//数据加载等待动画
-        //定义变量
-        useRe      : '',
-        list       : [],//表格的数据
-        allVersion : [],
-        allShell   : [],
-        allColumns : [],
-        allReRule  : [],
+        //定义变量 
+        useRe       : '',
+        list        : [],//表格的数据
+        allVersion  : [],
+        allShell    : [],
+        allColumns  : [],
+        allReRule   : [],
         allReMethod : [],
         allCommandType : [],
         allSystemType  : [],
+        allMessageFormat : [],
         doTestResult   : '',
         listQuery: {
           pageNum: 1,//页码
@@ -385,7 +409,18 @@
           pageNum: 1,//页码
           pageRow: 50,//每页条数
         },
-
+        shell_stat: {
+          pageNum: 1,//页码
+          pageRow: 50,//每页条数
+          downRemark: ''
+        },
+        processStatus: [{
+          value : "0",
+          lable : 'ON'
+        },{
+          value : "1",
+          lable : 'OFF'
+        }],
         // sysVersion: [{
         //   value:'0',
         //   lable:'MySQL'
@@ -404,6 +439,7 @@
         // }],//角色列表
         dialogStatus: 'create',
         dialogFormVisible: false,
+        downFormVisible : false,
         textMap: {
           update: '编辑脚本',
           create: '新建脚本'
@@ -426,6 +462,8 @@
           selectSum       : '',
           valuesDesc      : '',
           attributeLen    : '',
+          messageFormat   : '',
+          execStatus      : '',
           systemType      : [],
           shareParams     : []
         },
@@ -441,6 +479,7 @@
         this.getAllColumns();
         this.getReRule();
         this.getReMethod();
+        this.getMessageFormat();
       }
     },
     watch:{
@@ -452,9 +491,15 @@
       ])
     },
     methods: {
+      tableRowClassName({row, rowIndex}) {
+        debugger
+        if (this.list[rowIndex].shellStats == 1) {
+          return 'warning-row';
+        } 
+        
+      },
       // 添加分享链接参数
       addShareLink() {
-        debugger
         if(this.tempScriptConfig.attributeLen < 5){
           this.tempScriptConfig.attributeLen += 1;
           this.tempScriptConfig.shareParams.push({
@@ -472,7 +517,6 @@
       },
       // 删除分享参数
       removeParam() {
-        debugger
         var index = this.tempScriptConfig.attributeLen
         if(index  == 0){
            this.tempScriptConfig.shareParams.splice(index, 1);
@@ -484,7 +528,6 @@
         
       },
       doTestShell() {
-        debugger
         //刷新定时器
         let _vue = this;
         this.listLoading = false;
@@ -500,7 +543,6 @@
         })  
       },
       selectShellSum(e){
-        debugger
         //查询列表
         this.listLoading    = true;
         this.listQuery_Type.shellType   = e;
@@ -536,7 +578,6 @@
         }
       },
       selectSystemType(e){
-        debugger
         //查询列表
         this.listLoading             = true;
         this.listQuery_get.type      = e;
@@ -555,7 +596,6 @@
       },
 
       replaceSystemType(e){
-        debugger
         //查询列表
         this.listLoading             = true;
         this.listQuery_get.type      = e;
@@ -574,7 +614,6 @@
         })
       },
       replaceUseRe(e){
-        debugger
         //查询列表
         this.listLoading             = true;
         this.listQuery_Re.valuesDesc = ''   
@@ -589,7 +628,6 @@
         })
       },
       getCommandType() {
-        debugger
         this.api({
           url: "/commonsConfig/getCommandType",
           method: "get"
@@ -599,7 +637,6 @@
       },
 
       getAllShellType() {
-        debugger
         this.api({
           url: "/commonsConfig/getAllShellType",
           method: "get"
@@ -617,7 +654,6 @@
       //   })
       // },
       getReRule() {
-        debugger
         this.api({
           url: "/commonsConfig/getAllReRule",
           method: "get"
@@ -626,7 +662,6 @@
         })
       },
       getReMethod() {
-        debugger
         this.api({
           url: "/commonsConfig/getAllReMethod",
           method: "get"
@@ -634,8 +669,17 @@
           this.allReMethod = data.list;
         })
       },
+
+      getMessageFormat() {
+        this.api({
+          url: "/commonsConfig/getMessageFormat",
+          method: "get"
+        }).then(data => {
+          this.allMessageFormat = data.list;
+        })
+      },
+
       getAllColumns() {
-        debugger
         this.api({
           url: "/scriptConfig/getAllColumns",
           method: "get"
@@ -690,8 +734,7 @@
         this.tempScriptConfig.monitorCritical =  ""; 
       },
       showCreate() {
-        //显示新增对话框
-        debugger
+        //显示新增对话        
         let shell = this.list[0];
         this.tempScriptConfig.attributeLen    =  1;
         this.tempScriptConfig.type            =  ""; 
@@ -712,6 +755,7 @@
         this.tempScriptConfig.monitorCritical =  "";  
         this.tempScriptConfig.execTime        =  "";
         this.tempScriptConfig.timeOut         =  "";
+        this.tempScriptConfig.messageFormat   =  "";
         this.tempScriptConfig.systemType      =  [];  
         this.tempScriptConfig.shareParams     =  [];  
         if (shell === undefined) {
@@ -723,7 +767,6 @@
         this.dialogFormVisible = true
       },
       showUpdate($index) {
-        debugger
         let shell            = this.list[$index];
         // let withColumns      = shell.withColumns;
         // if (withColumns != "" ){
@@ -768,6 +811,7 @@
         this.tempScriptConfig.monitorCritical =  shell.monitorCritical;  
         this.tempScriptConfig.execTime        =  shell.execTime;
         this.tempScriptConfig.timeOut         =  shell.timeOut;
+        this.tempScriptConfig.messageFormat   =  shell.messageFormat;
         this.tempScriptConfig.systemType      =  arrSystemType;
         if(shell.shareParams == undefined){
           this.tempScriptConfig.shareParams   =  [];
@@ -785,28 +829,38 @@
         this.selectSystemType(this.tempScriptConfig.type)
         this.replaceUseRe(this.tempScriptConfig.shellDesc)
       },
+
+      showShellStats($index) {
+        //修改用户信息
+        this.downFormVisible   = true
+        this.shell_stat.index  = $index
+      },
+
       createScript() {
         let _vue = this;
         //添加新用户
+        this.listLoading = true;
         this.api({
           url: "/scriptConfig/addScript",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           _vue.$message.success("新增成功")
           this.getList();
           this.dialogFormVisible = false
         })
       },
       updateScript() {
-        debugger
         //修改用户信息
         let _vue = this;
+        this.listLoading = true;
         this.api({
           url: "/scriptConfig/updateScript",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           let msg = "修改成功";
           this.dialogFormVisible = false
           if (this.userId === this.tempScriptConfig.userId) {
@@ -822,8 +876,54 @@
           })
         })
       },
+
+      shellStats($index) {
+        //修改用户信息
+        let _vue = this;
+        var index = ''
+        var msg = '';
+        if($index != undefined){
+          index  = $index;
+        }else{
+          index = this.shell_stat.index
+        }
+        let shell  = this.list[index];
+        this.listLoading = true;
+        if(shell.shellStats == 1){
+          this.shell_stat.shellStats = 0
+          msg = '上线成功'
+        }else{
+          this.shell_stat.shellStats = 1
+          msg = '下线成功'
+        }
+        this.shell_stat.code = shell.code
+        // this.downFormVisible  = true
+        this.api({
+          url: "/scriptConfig/updateShellStats",
+          method: "post",
+          data:  this.shell_stat
+        }).then(() => {
+          this.listLoading = false;
+          // let msg = "下线成功";
+          this.downFormVisible = false;
+          this.shell_stat.downRemark = "";
+          if (this.userId === this.tempScriptConfig.userId) {
+            msg = '修改成功,部分信息重新登录后生效'
+          }
+          this.$message({
+            message: msg,
+            type: 'success',
+            duration: 1 * 1000,
+            onClose: () => {
+              _vue.getList();
+            }
+          })
+        })
+      },
+      
       removeUser($index) {
         let _vue = this;
+        this.listLoading = true;
         this.$confirm('确定删除此命令?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
@@ -837,9 +937,11 @@
             method: "post",
             data: this.tempScriptConfig
           }).then(() => {
+            this.listLoading = false;
             _vue.$message.success("删除成功")
             _vue.getList()
           }).catch(() => {
+            this.listLoading = false;
             _vue.$message.error("删除失败")
           })
         })
@@ -848,9 +950,9 @@
     }
   }
 </script>
-<style lang="scss" scoped>
+<style>
   dt {text-align:left;  margin-left:5px;}
-  .fail{
-    color: #888888;font-weight: 500; text-decoration: line-through;
+  .el-table .warning-row {
+    background: #888888;
   }
 </style>

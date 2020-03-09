@@ -99,16 +99,16 @@ export const asyncRouterMap = [
     children: [  
       {
         path: '', 
-        name: '监控脚本配置', 
+        name: '监控命令配置', 
         component: _import('monConfig/scriptConfig'), 
-        meta: {title: '监控脚本配置', icon: '脚本配置'}, 
+        meta: {title: '监控命令配置', icon: '脚本配置'}, 
         menu: 'shell_setting'
       },
       {
         path: 'sync', 
         name: '数据同步配置', 
         component: _import('monConfig/syncConfig'), 
-        meta: {title: '数据同步配置', icon: '数据同步'}, 
+        meta: {title: '服务器同步配置', icon: '数据同步'}, 
         menu: 'syncConfig'
       },
       {
@@ -168,6 +168,13 @@ export const asyncRouterMap = [
         component: _import('monManage/sqlLog'), 
         meta: {title: 'SQL性能监控', icon: 'SQL监控'}, 
         menu: 'sql_log'
+      },
+      {
+        path: 'exec_count', 
+        name: '执行次数统计', 
+        component: _import('monManage/execCount'), 
+        meta: {title: '执行次数统计', icon: '统计次数'}, 
+        menu: 'exec_count'
       },
       {
         path: 'alarm', 

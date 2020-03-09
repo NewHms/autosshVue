@@ -23,11 +23,12 @@
       <el-table-column align="center" label="资源编号"   prop="code"></el-table-column>
       <el-table-column align="center" label="值"     prop="values"></el-table-column>
       <el-table-column align="center" label="说明"    prop="valuesDesc"></el-table-column>
+      <el-table-column align="center" label="备注"    prop="remark"></el-table-column>
       <el-table-column align="center" width="70" label="管理" v-if="hasPerm('scriptConfig:update')">
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
           <el-button type="text" icon="el-icon-delete" 
-                     @click="removeUser(scope.$index)">
+                     @click="removeUser(scope.$index)" :loading=this.listLoading>
           </el-button>
         </template>
       </el-table-column>
@@ -71,12 +72,16 @@
         <el-form-item label="说明" required label-width="150px">
           <el-input type="text" v-model="tempScriptConfig.valuesDesc"> 
           </el-input>
+        </el-form-item>
+        <el-form-item label="备注" required label-width="150px">
+          <el-input type="textarea" v-model="tempScriptConfig.remark" :autosize="{ minRows: 2, maxRows: 4}" style="width:250px"> 
+          </el-input>
         </el-form-item>   
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
-        <el-button type="primary" v-else @click="updateScript">修 改</el-button>
+        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript" :loading=this.listLoading>创 建</el-button>
+        <el-button type="primary" v-else @click="updateScript" :loading=this.listLoading>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -108,7 +113,8 @@
           values        : '',  
           valuesDesc    : '',
           maxCode       : '',
-          Title         : ''
+          Title         : '',
+          remark        : '',
         },
         
       }
@@ -182,6 +188,7 @@
         this.tempScriptConfig.values       =  "";  
         this.tempScriptConfig.valuesDesc   =  "";
         this.tempScriptConfig.Title        =  "";
+        this.tempScriptConfig.remark       =  "";
         this.dialogStatus = "create"
         this.dialogFormVisible = true
       },
@@ -191,19 +198,22 @@
         this.tempScriptConfig.code         =  shell.code;
         this.tempScriptConfig.values       =  shell.values; 
         this.tempScriptConfig.valuesDesc   =  shell.valuesDesc; 
-        this.tempScriptConfig.Title        =  shell.Title; 
-        this.tempScriptConfig.id           = shell.id;
-        this.dialogStatus                  = "update"
-        this.dialogFormVisible             = true
+        this.tempScriptConfig.Title        =  shell.Title;
+        this.tempScriptConfig.remark       =  shell.remark; 
+        this.tempScriptConfig.id           =  shell.id;
+        this.dialogStatus                  =  "update"
+        this.dialogFormVisible             =  true
       },
       createScript() {
         let _vue = this;
+        this.listLoading = true;
         //添加新用户
         this.api({
           url: "/resourcesConfig/addResources",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           _vue.$message.success("新增成功")
           this.getList();
           this.dialogFormVisible = false
@@ -213,11 +223,13 @@
         debugger
         //修改用户信息
         let _vue = this;
+        this.listLoading = true;
         this.api({
           url: "/resourcesConfig/updateResources",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           let msg = "修改成功";
           this.dialogFormVisible = false
           if (this.userId === this.tempScriptConfig.userId) {
@@ -235,6 +247,7 @@
       },
       removeUser($index) {
         let _vue = this;
+        this.listLoading = true;
         this.$confirm('确定删除此配置?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
@@ -248,9 +261,11 @@
             method: "post",
             data: this.tempScriptConfig
           }).then(() => {
+            this.listLoading = false;
             _vue.$message.success("删除成功")
             _vue.getList()
           }).catch(() => {
+            this.listLoading = false;
             _vue.$message.error("删除失败")
           })
         })

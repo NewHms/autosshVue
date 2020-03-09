@@ -61,7 +61,7 @@
         <template slot-scope="scope">
           <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
           <el-button type="text" icon="el-icon-delete" 
-                     @click="removeUser(scope.$index)">
+                     @click="removeUser(scope.$index)" :loading=this.listLoading>
           </el-button>
         </template>
       </el-table-column>
@@ -207,8 +207,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
-        <el-button type="primary" v-else @click="updateScript">修 改</el-button>
+        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript" :loading=this.listLoading>创 建</el-button>
+        <el-button type="primary" v-else @click="updateScript" :loading=this.listLoading>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -373,12 +373,13 @@
         //修改告警开始时间
         debugger
         let _vue = this;
-       
+        this.listLoading = true;
         this.api({
           url: "/dateRangeConfig/updateRangeTime",
           method: "post",
           data:  this.list[$index]
         }).then(() => {
+          this.listLoading = false;
           let msg = "修改成功";
           this.dialogFormVisible = false
           if (this.userId === this.tempScriptConfig.userId) {
@@ -450,12 +451,14 @@
       createScript() {
         debugger
         let _vue = this;
+        this.listLoading = true;
         //添加新用户
         this.api({
           url: "/dateRangeConfig/addDateRange",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           _vue.$message.success("新增成功")
           this.getList();
           this.dialogFormVisible = false
@@ -465,12 +468,14 @@
         debugger
         //修改用户信息
         let _vue = this;
+        this.listLoading = true;
         this.api({
           url: "/dateRangeConfig/updateDateRange",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
           let msg = "修改成功";
+          this.listLoading = false;
           this.dialogFormVisible = false
           if (this.userId === this.tempScriptConfig.userId) {
             msg = '修改成功,部分信息重新登录后生效'
@@ -487,6 +492,7 @@
       },
       removeUser($index) {
         let _vue = this;
+        this.listLoading = true;
         this.$confirm('确定删除此配置?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
@@ -500,9 +506,11 @@
             method: "post",
             data: this.tempScriptConfig
           }).then(() => {
+            this.listLoading = false;
             _vue.$message.success("删除成功")
             _vue.getList()
           }).catch(() => {
+            this.listLoading = false;
             _vue.$message.error("删除失败")
           })
         })

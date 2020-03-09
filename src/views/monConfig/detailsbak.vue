@@ -5,10 +5,20 @@
 
         <el-form-item>
           <el-input v-model="listQuery.host" placeholder="请输入服务器IP地址" style='width: 300px;' type="text" clearable></el-input>
+          <el-select v-model="listQuery.allApplica" placeholder="请选择机房" label-width="80px" style='width: 15%' clearable> 
+            <el-option
+              v-for="item in allApplicaServer"
+              :key="item.appId"
+              :label="item.appType"
+              :value="item.appType">
+              <span style="float: left">{{ item.appType }}</span>
+              <span style="float: right">{{ item.valuesDesc }}</span>
+            </el-option>
+          </el-select>
           <el-select v-model="listQuery.shellType" placeholder="请选择服务器类型" 
             label-width="80px" style='width: 15%' clearable @change="selectShellSum($event)"> 
             <el-option
-              v-for="item in allOsType"
+              v-for="item in allShell"
               :key="item.shellId"
               :label="item.shellType"
               :value="item.shellType">
@@ -57,7 +67,12 @@
         </el-table-column>
         <el-table-column align="center"   label="实例名"       prop="serviceName" ></el-table-column>
         <el-table-column align="center"   label="机房"         prop="location" ></el-table-column>
-        <el-table-column align="center"   label="监控服务器"   prop="applicationServer" width="150" sortable></el-table-column>
+        <el-table-column label="监控服务器"    width="150" sortable>
+          <template slot-scope="scope">
+            <dt>{{ scope.row.applicationServer }}</dt>
+            <dt>{{ scope.row.applicationServerDesc }}</dt> 
+          </template>  
+        </el-table-column>
         <el-table-column align="center"   label="用户名"       width="100">
           <el-table-column align="center" label="OS用户名"     prop="userName" width="120"></el-table-column>
           <el-table-column align="center" label="DB用户名"     prop="dbUsername" ></el-table-column>
@@ -70,7 +85,7 @@
             </el-button>
             <el-button type="text" icon="el-icon-edit" @click="showUpdate(scope.$index)"></el-button>
             <el-button type="text" icon="el-icon-delete" 
-                     @click="removeUser(scope.$index)">
+                     @click="removeUser(scope.$index)" :loading=this.listLoading>
             </el-button>
           </template>
       </el-table-column>
@@ -131,6 +146,8 @@
               :key="item.appId"
               :label="item.appType"
               :value="item.appType">
+              <span style="float: left">{{ item.appType }}</span>
+              <span style="float: right">{{ item.valuesDesc }}</span>
             </el-option>
           </el-select>
         </el-form-item>
@@ -186,8 +203,8 @@
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false;alltype=[]">取 消</el-button>
-        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript">创 建</el-button>
-        <el-button type="primary" v-else @click="updateScript">修 改</el-button>
+        <el-button v-if="dialogStatus=='create'" type="success" @click="createScript" :loading=this.listLoading>创 建</el-button>
+        <el-button type="primary" v-else @click="updateScript" :loading=this.listLoading>修 改</el-button>
       </div>
     </el-dialog>
   </div>
@@ -212,7 +229,7 @@
         alltype          : [],
         allLocation      : [],
         allosRole        : [],
-        allOsType        : [],
+        allShell         : [],
         allSystemType    : [],
         listQuery: {
           pageNum: 1,//页码
@@ -252,6 +269,7 @@
           logicalInfo            : '',
           remark                 : '',
           selectSum              : '',
+          applicationServerDesc  : '',
         },
         
       }
@@ -265,7 +283,7 @@
         this.getAllAppServer();
         this.getAllServer();
         this.getAllOsRole();
-        this.getAllOsType();
+        this.getAllShellType();
       }
     },
     computed: {
@@ -275,30 +293,32 @@
     },
     methods: {
       goToDetails($index) {
-        debugger
+     
         let _vue = this;
         let details = _vue.list[$index];
         this.$router.push({name: '私有阀值配置', params: {host: details.host,
                                                         serviceName : details.serviceName,
                                                         systemType  : details.systemType}})
       },
-      getAllOsType() {
-        debugger
+
+      getAllShellType() {
+      
         this.api({
-          url: "/serverConfig/getSystemTypeSum",
+          url: "/commonsConfig/getServerType",
           method: "get"
         }).then(data => {
-          this.allOsType = data.list;
+          this.allShell = data.list;
         })
       },
+
       selectShellSum(e){
-        debugger
+      
         //查询列表
         this.listLoading    = true;
-        this.listQuery_Type.systemType  = e;
+        this.listQuery_Type.shellType   = e;
         this.tempScriptConfig.selectSum = ""
         this.api({ 
-          url: "/serverConfig/getSystemVersionSum",
+          url: "/commonsConfig/getServeVersion",
           method: "get",
           params: this.listQuery_Type
         }).then(data => {
@@ -310,7 +330,8 @@
         debugger
         //查询列表
         this.listLoading             = true;  
-        this.listQuery_get.inType      = e.replace("\n","");
+        
+        this.listQuery_get.inType      = e.replace(/\n/g,"");
         this.api({ 
           url: "/commonsConfig/getInVersionType",
           method: "get",
@@ -321,7 +342,7 @@
         })
       },
       selectType(e){
-        debugger
+        //debugger
         //查询列表
         this.listLoading             = true;
         this.listQuery_get.type      = e;
@@ -365,14 +386,14 @@
       },
       updateDateRange($index) {
         //修改告警开始时间
-        debugger
         let _vue = this;
-       
+        this.listLoading = true;
         this.api({
           url: "/serverConfig/updateDateRange",
           method: "post",
           data:  this.list[$index]
         }).then(() => {
+          this.listLoading = false;
           let msg = "修改成功";
           this.dialogFormVisible = false
           if (this.userId === this.tempScriptConfig.userId) {
@@ -405,12 +426,12 @@
         })
       },
       getList() {
-        debugger
+  
         //查询列表
         this.listLoading = true;
         //this.listQuery.test = this.allAppServer;
         if(this.tempScriptConfig.selectSum != undefined){
-          this.listQuery.systemVersion = this.tempScriptConfig.selectSum
+          this.listQuery.systemType = this.tempScriptConfig.selectSum
         }
         this.api({
 
@@ -444,7 +465,6 @@
         return (this.listQuery.pageNum - 1) * this.listQuery.pageRow + $index + 1
       },
       showCreate() {
-        debugger
         this.tempScriptConfig.host                   = "";
         this.tempScriptConfig.type                   = "";
         this.tempScriptConfig.systemVersion          = [];
@@ -479,7 +499,7 @@
         this.dialogFormVisible = true
       },
       showUpdate($index) {
-        debugger
+        
         let shell = this.list[$index];
         let systemVersion  = shell.systemVersion;
         var arrStringTypes = new Array();
@@ -528,27 +548,30 @@
       },
 
       flushScheduler() {
-        debugger
+        
         //刷新定时器
         let _vue = this;
-        this.listLoading = false;
+        this.listLoading = true;
         this.api({
           url: "/serverConfig/flushScheduler",
           method: "get",
         }).catch(() => {
+            this.listLoading = false;
             _vue.$message.success("刷新成功")
             _vue.getList()
           })
       },
       createScript() {
-        debugger
+        
         let _vue = this;
         //添加新配置
+        this.listLoading = true;
         this.api({
           url: "/serverConfig/addServer",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           _vue.$message.success("新增成功")
           this.getList();
           this.dialogFormVisible = false
@@ -556,14 +579,15 @@
       },
       updateScript() {
         //修改配置信息
-        debugger
+    
         let _vue = this;
-        
+        this.listLoading = true;
         this.api({
           url: "/serverConfig/updateServer",
           method: "post",
           data: this.tempScriptConfig
         }).then(() => {
+          this.listLoading = false;
           let msg = "修改成功";
           this.dialogFormVisible = false
           if (this.userId === this.tempScriptConfig.userId) {
@@ -581,22 +605,27 @@
       },
       removeUser($index) {
         let _vue = this;
+        this.listLoading = true
         this.$confirm('确定删除此配置?', '提示', {
           confirmButtonText: '确定',
           showCancelButton: false,
           type: 'warning'
         }).then(() => {
+          debugger
           let script = _vue.list[$index];
           //user.deleteStatus = '2';
-          this.tempScriptConfig.id = script.id;
+          this.tempScriptConfig.serviceName = script.serviceName;
+          this.tempScriptConfig.host = script.host;
           _vue.api({
             url: "/serverConfig/deleteDetails",
             method: "post",
             data: this.tempScriptConfig
           }).then(() => {
+            this.listLoading = false
             _vue.$message.success("删除成功")
             _vue.getList()
           }).catch(() => {
+            this.listLoading = false
             _vue.$message.error("删除失败")
           })
         })

@@ -88,6 +88,13 @@
                 <dt>{{ scope.row.execTimeHour }}</dt> 
               </template>
             </el-table-column> 
+            <el-table-column align="center" label="结束时间"  width="120">
+              <template slot-scope="scope">
+                <dt>{{ scope.row.execEndTimeDay  }}</dt>
+                <dt>{{ scope.row.execEndTimeHour }}</dt> 
+              </template>
+            </el-table-column>
+            <el-table-column   align="center" width="80"     label="间隔"    prop="diffTime"></el-table-column>
             <el-table-column   align="center" width="80"     label="执行次数"    prop="execNum"></el-table-column>
           </el-table>
           <el-pagination
@@ -110,8 +117,14 @@
       <el-table-column align="center"     label="实例名"         prop="serviceName"  width="100"></el-table-column>
       <el-table-column align="center"     label="机房位置"       prop="location"     width="90">    </el-table-column>
       <el-table-column align="center"     label="命令描述"       prop="shellDesc"  >    </el-table-column>
+      <el-table-column label="执行次数"  width="150">
+        <template slot-scope="scope">
+          <dt>实际: {{ scope.row.execRealCount}}</dt>
+          <dt>计划: {{ scope.row.execExpecCount }}</dt> 
+        </template>
+      </el-table-column>
       <!-- <el-table-column align="center"     label="code"          prop="code"         width="70">        </el-table-column> --> 
-      <el-table-column align="center"     label="结果状态"       prop="resultStatus" width="120">
+      <el-table-column align="center"     label="结果状态"       prop="resultStatus" width="100">
         <template slot-scope="scope">
             <dt v-if="scope.row.resultStatus == 'FAIL'"     class="fa fa-close" type = "text">
             </dt>
@@ -124,7 +137,7 @@
         </template>
       </el-table-column>
       <!-- <el-table-column align="center"     label="恢复状态"       prop="status"       width="120">      </el-table-column> -->
-      <el-table-column align="center"     label="告警起始时间"    prop="alarmStartTime" width="300">
+      <el-table-column align="center"     label="告警起始时间"    prop="alarmStartTime" width="260">
         <template  slot-scope="timeScope">
           <el-date-picker
             v-model="timeScope.row.alarmStartTime"
@@ -243,6 +256,8 @@
           status         : '',
           execTimeDay    : '',
           execTimeHour   : '',
+          execEndTimeDay : '',
+          execEndTimeHour: '',
           alarmStartTime : '',
           maxExecTime    : '',
           IP             : '',
@@ -250,8 +265,12 @@
           USER           : '',      
           execStatus     : '',
           execNum        : '',
+          diffTime       : '',
           type           : '',
           logType        : '',
+          execRealCount  : '',
+          execExpecCount : '',
+          execStatus     : '',
         },
         
       }
@@ -293,12 +312,16 @@
       },
       checkDel({row, column, rowIndex, columnIndex}){
         debugger
+        if (this.list[rowIndex].execStatus =='NG' && columnIndex === 6){
+          return 'NG'
+        }
         if (this.list[rowIndex].status == "NG"){
           return 'NG'
         }
         if (this.list[rowIndex].status == "OK"){
           return 'OK'
         }
+        
       },
       
       getAllLogType() {
@@ -683,5 +706,4 @@
   .OK{
     color: #008000;font-weight: 500;
   }
-  
 </style>
